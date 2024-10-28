@@ -1,0 +1,27 @@
+::ng-deep .reject-modal-backdrop {
+  z-index: 1050 !important;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-check {
+  margin-bottom: 10px;
+}
+
+textarea {
+  width: 100%;
+  resize: none;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+}

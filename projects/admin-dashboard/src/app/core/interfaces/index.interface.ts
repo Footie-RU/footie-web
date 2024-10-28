@@ -18,3 +18,8 @@ export interface Tab {
   disabled: boolean;
   content: string;
 }
+
+export enum kycDocumentsFileTypes {
+  pdf = 'application/pdf',
+  image = 'image/*',
+}

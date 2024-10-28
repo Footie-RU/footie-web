@@ -28,7 +28,8 @@ import { MatRippleModule } from '@angular/material/core';
     ClipboardModule,
     NgbTooltip,
     AdminKYCRecordComponentsModule,
-    MatRippleModule
+    MatRippleModule,
+    SharedComponentsModule
   ]
 })
 export class KYCRecordsPagesModule { }

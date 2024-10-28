@@ -69,6 +69,10 @@
   cursor: zoom-out;
 }
 
+.address {
+  padding: 11px !important;
+}
+
 ::ng-deep .modal-dialog.overflow-hidden.image-preview-modal {
   .modal-content {
     overflow: hidden;
@@ -76,7 +80,7 @@
 }
 
 // in desktop view set width to 150px
-@media (min-width: 992px) {
+@media (min-width: 1081px) {
   .personal-info.image {
     width: 150px;
   }

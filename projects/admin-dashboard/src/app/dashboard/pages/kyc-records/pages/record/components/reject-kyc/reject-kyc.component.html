@@ -1,0 +1,52 @@
+<div class="modal-header">
+  <h4 class="modal-title">Reject KYC Application</h4>
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="close()"
+  ></button>
+</div>
+
+<div class="modal-body">
+  <form>
+    <!-- Predefined quick-select rejection reasons -->
+    <div class="mb-3">
+      <!-- <label class="form-label">Quick Select Rejection Reason</label> -->
+      <div class="d-flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          *ngFor="let option of rejectionOptions"
+          (click)="selectReason(option); textarea.focus()"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Custom rejection reason (input auto-filled) -->
+    <div class="mb-3">
+      <label for="customReason" class="form-label">Rejection Reason</label>
+      <textarea
+        autofocus="true"
+        id="customReason"
+        class="form-control"
+        [(ngModel)]="rejectionReason"
+        name="customReason"
+        rows="3"
+        #textarea
+        placeholder="Provide a rejection reason or select one above"
+      ></textarea>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-danger" (click)="reject()">
+    Reject
+  </button>
+  <button type="button" class="btn btn-secondary" (click)="close()">
+    Cancel
+  </button>
+</div>

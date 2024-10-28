@@ -1,18 +1,21 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AddressTypeFilterPipe } from './location.pipe';
+import { SafeHtmlPipe } from './safehtml.pipe.ts.pipe';
 
 
 
 @NgModule({
   declarations: [
-    AddressTypeFilterPipe
+    AddressTypeFilterPipe,
+    SafeHtmlPipe
   ],
   imports: [
     CommonModule
   ],
   exports: [
-    AddressTypeFilterPipe
+    AddressTypeFilterPipe,
+    SafeHtmlPipe
   ]
 })
 export class SharedPipesModule { }

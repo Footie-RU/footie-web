@@ -6,7 +6,9 @@
         <div class="row">
           <div class="col-md-12">
             <div class="profile-view">
-              <div class="profile-img-wrap h-100 d-flex flex-row flex-wrap justify-content-between gap-3 gap-md-0">
+              <div
+                class="profile-img-wrap h-100 d-flex flex-row flex-wrap justify-content-between gap-3 gap-md-0"
+              >
                 <div class="profile-img">
                   <img
                     #avatar
@@ -28,11 +30,19 @@
                     }"
                     >{{ record.status }}</span
                   >
+                  <br *ngIf="record.status === 'rejected' && record.rejectionReason">
+                  <small *ngIf="record.status === 'rejected' && record.rejectionReason"
+                    ><a
+                      class="text-danger"
+                      (click)="displayRejectionReason(rejectionReasonModal)"
+                      >See why</a
+                    ></small
+                  >
                 </div>
               </div>
               <div class="profile-basic pe-0">
                 <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-lg-6">
                     <div class="profile-info-left">
                       <h3 class="user-name mt-3 mt-md-0 mb-0 text-capitalize">
                         {{ record.user.firstName }} {{ record.user.lastName }}
@@ -53,7 +63,7 @@
                       </div>
 
                       <div
-                        class="small doj d-flex align-items-center justify-content-md-start justify-content-center"
+                        class="small doj d-flex align-items-center justify-content-lg-start justify-content-center"
                       >
                         <strong>User ID:</strong>
                         <span
@@ -83,7 +93,7 @@
                       </div>
 
                       <div
-                        class="small doj d-flex align-items-center justify-content-md-start justify-content-center mt-2"
+                        class="small doj d-flex align-items-center justify-content-lg-start justify-content-center mt-2"
                       >
                         <strong>KYC ID:</strong>
                         <span
@@ -116,7 +126,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-lg-6">
                     <ul class="kyc personal-info">
                       <li>
                         <div class="title">Progress:</div>
@@ -185,15 +195,6 @@
                   </div>
                 </div>
               </div>
-              <div class="pro-edit">
-                <a
-                  data-bs-target="#profile_info"
-                  data-bs-toggle="modal"
-                  class="edit-icon"
-                  href="#"
-                  ><i class="fa-solid fa-pencil"></i
-                ></a>
-              </div>
             </div>
           </div>
         </div>
@@ -228,6 +229,7 @@
       *ngIf="activeTab.content === 'kyc'"
       [record]="record"
       (editKYC)="canEditKYC = $event"
+      (formChanged)="kycPayload = $event"
     ></admin-app-kyc-info>
 
     <!-- Documents Tab -->
@@ -447,46 +449,56 @@
 </ng-template>
 
 <!-- Action buttons fixed bottom -->
-<div class="container-fluid bg-wrapper" style="z-index: 1000">
+<div *ngIf="kycRecord$ | async as record;" class="container-fluid bg-wrapper" style="z-index: 1000">
   <div class="row justify-content-center">
     <div class="col-md-8 col-12 py-3">
       <div class="row">
         <div class="col-4">
-          <button
-            class="btn"
-            placement="top"
-            style="
-              padding: 15px;
-              background-color: #e36f00 !important;
-              color: #fff !important;
-            "
+          <footiedrop-web-loading-button
+            [buttonText]="'Save'"
+            [loading]="(saving$ | async) ? true : false"
             [disabled]="!canSave"
-            matRipple
-          >
-            Save
-          </button>
+            class="primary"
+            toolTip="Save changes"
+            (click)="save()"
+          ></footiedrop-web-loading-button>
         </div>
         <div class="col-4">
-          <button
-            class="btn btn-success"
-            [ngbTooltip]="'Approve KYC'"
-            placement="top"
-            matRipple
-          >
-            Approve
-          </button>
+          <footiedrop-web-loading-button
+            [buttonText]="'Approve'"
+            [loading]="(approving$ | async) ? true : false"
+            [disabled]="isDisabled(record)"
+            class="success"
+            toolTip="Approve KYC"
+            (clicked)="approve(record)"
+          ></footiedrop-web-loading-button>
         </div>
         <div class="col-4">
-          <button
-            class="btn btn-danger"
-            [ngbTooltip]="'Reject KYC'"
-            placement="top"
-            matRipple
-          >
-            Reject
-          </button>
+          <footiedrop-web-loading-button
+            [buttonText]="'Reject'"
+            [loading]="(rejecting$ | async) ? true : false"
+            [disabled]="isDisabled(record)"
+            class="danger"
+            toolTip="Reject KYC"
+            (clicked)="reject(record)"
+          ></footiedrop-web-loading-button>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Rejection Reason Modal -->
+<ng-template #rejectionReasonModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Rejection Reason</h5>
+  </div>
+  <div class="modal-body">
+    <p *ngIf="kycRecord$ | async as record">{{ record.rejectionReason }}</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">
+      Close
+    </button>
+  </div>
+</ng-template>

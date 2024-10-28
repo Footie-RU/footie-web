@@ -10,6 +10,10 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { RouterModule } from '@angular/router';
 import { NgbDatepickerModule, NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { InfoCardComponent } from './info-card/info-card.component';
+import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { MatRippleModule } from '@angular/material/core';
+import { ConfirmActionComponent } from './confirm-action/confirm-action.component';
 
 
 
@@ -21,6 +25,8 @@ import { InfoCardComponent } from './info-card/info-card.component';
     StarRatingComponent,
     KycListComponent,
     InfoCardComponent,
+    PdfViewerComponent,
+    ConfirmActionComponent,
   ],
   imports: [
     CommonModule,
@@ -30,7 +36,9 @@ import { InfoCardComponent } from './info-card/info-card.component';
     RouterModule,
     NgbDropdownModule,
     NgbDatepickerModule,
-    NgbTooltipModule
+    NgbTooltipModule,
+    PdfViewerModule,
+    MatRippleModule
   ],
   exports: [
     LoadingButtonComponent,
@@ -39,6 +47,7 @@ import { InfoCardComponent } from './info-card/info-card.component';
     StarRatingComponent,
     KycListComponent,
     InfoCardComponent,
+    PdfViewerComponent,
   ]
 })
 export class SharedComponentsModule { }

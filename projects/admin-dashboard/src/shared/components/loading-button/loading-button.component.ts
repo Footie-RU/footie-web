@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'footiedrop-web-loading-button',
@@ -10,5 +10,8 @@ export class LoadingButtonComponent {
   @Input() buttonText = 'Submit';
   @Input() type = 'submit';
   @Input() disabled: boolean = false;
-  @Input() class: 'primary' | 'secondary' = 'primary';
+  @Input() class: 'primary' | 'secondary' | 'success' | 'danger' = 'primary';
+  @Input() toolTip: string = '';
+
+  @Output() clicked:  EventEmitter<void> = new EventEmitter<void>();
 }

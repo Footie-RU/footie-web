@@ -6,6 +6,9 @@ export interface KycState {
   kycRecords: UserKYC[];
   selectedRecord?: UserKYC;
   loading: boolean;
+  approving: boolean;
+  rejecting: boolean;
+  saving: boolean;
   error: any;
   filters: {
     query: string | null;
@@ -16,14 +19,17 @@ export interface KycState {
     dateRange: {
       startDate: Date | null;
       endDate: Date | null;
-    }
-  }
+    };
+  };
 }
 
 const initialState: KycState = {
   kycRecords: [],
   selectedRecord: undefined,
   loading: false,
+  approving: false,
+  rejecting: false,
+  saving: false,
   error: null,
   filters: {
     query: null,
@@ -33,30 +39,72 @@ const initialState: KycState = {
     userId: null,
     dateRange: {
       startDate: null,
-      endDate: null
-    }
-  }
+      endDate: null,
+    },
+  },
 };
 
 export const kycReducer = createReducer(
   initialState,
   on(kycActions.loadKycRecords, (state) => ({ ...state, loading: true })),
-  on(kycActions.loadKycRecordsSuccess, (state, { kycRecords }) => ({ ...state, loading: false, kycRecords })),
-  on(kycActions.loadKycRecordsFailure, (state, { error }) => ({ ...state, loading: false, error })),
-  on(kycActions.updateKycRecord, (state) => ({ ...state, loading: true })),
+  on(kycActions.loadKycRecordsSuccess, (state, { kycRecords }) => ({
+    ...state,
+    loading: false,
+    kycRecords,
+  })),
+  on(kycActions.loadKycRecordsFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+  on(kycActions.updateKycRecord, (state) => ({ ...state, saving: true })),
   on(kycActions.updateUserKYCSuccess, (state, { kycRecord }) => {
-    const kycRecords = state.kycRecords.map((record) => record.userId === kycRecord.userId ? kycRecord : record);
-    return { ...state, loading: false, kycRecords };
+    const kycRecords = state.kycRecords.map((record) =>
+      record.userId === kycRecord.userId ? kycRecord : record
+    );
+    return { ...state, saving: false, kycRecords };
   }),
-  on(kycActions.updateKycRecordFailure, (state, { error }) => ({ ...state, loading: false, error })),
+  on(kycActions.updateKycRecordFailure, (state, { error }) => ({
+    ...state,
+    saving: false,
+    error,
+  })),
   on(kycActions.selectKycRecord, (state, { id }) => {
     const selectedRecord = state.kycRecords.find((record) => record.id === id);
     return { ...state, selectedRecord };
   }),
-  on(kycActions.selectKycRecordSuccess, (state, { kycRecord }) => ({ ...state, selectedRecord: kycRecord })),
-  on(kycActions.selectKycRecordFailure, (state, { error }) => ({ ...state, error })),
+  on(kycActions.selectKycRecordSuccess, (state, { kycRecord }) => ({
+    ...state,
+    selectedRecord: kycRecord,
+  })),
+  on(kycActions.selectKycRecordFailure, (state, { error }) => ({
+    ...state,
+    error,
+  })),
   on(kycActions.updateFilter, (state, { filters }) => ({
     ...state,
-    filters: { ...state.filters, ...filters }
+    filters: { ...state.filters, ...filters },
+  })),
+  on(kycActions.approveKycRecord, (state) => ({ ...state, approving: true })),
+  on(kycActions.rejectKycRecord, (state) => ({ ...state, rejecting: true })),
+  on(kycActions.updateKycStatus, (state) => ({ ...state, saving: true })),
+  on(kycActions.updateKycStatusSuccess, (state, { kycRecord }) => {
+    const kycRecords = state.kycRecords.map((record) =>
+      record.userId === kycRecord.userId ? kycRecord : record
+    );
+    return {
+      ...state,
+      approving: false,
+      rejecting: false,
+      saving: false,
+      kycRecords,
+    };
+  }),
+  on(kycActions.updateKycStatusFailure, (state, { error }) => ({
+    ...state,
+    saving: false,
+    approving: false,
+    rejecting: false,
+    error,
   }))
 );

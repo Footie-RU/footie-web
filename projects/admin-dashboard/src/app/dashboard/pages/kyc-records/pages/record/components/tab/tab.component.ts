@@ -18,4 +18,8 @@ export class TabComponent {
     this.activeTab = tab;
     this.activeTabChange.emit(tab);
   }
+
+  scrollTabIntoView(tab: HTMLAnchorElement): void {
+    tab.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }

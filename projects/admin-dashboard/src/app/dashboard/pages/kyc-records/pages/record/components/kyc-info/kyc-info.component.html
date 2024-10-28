@@ -8,22 +8,31 @@
       <div class="col-12 d-flex">
         <div class="card profile-box flex-fill">
           <div class="card-body">
-            <h3 class="card-title">
+            <h3 class="card-title d-flex justify-content-between">
               KYC Information
-              <a
-                href="javascript:void(0)"
+              <button
                 (click)="editKYCInfo()"
-                class="edit-icon"
-                ngbTooltip="Edit KYC Information"
-                ><i class="fa-solid fa-pencil"></i
-              ></a>
+                class="btn btn-sm btn-light"
+                [ngbTooltip]="
+                  canEditKYC ? 'Cancel changes' : 'Edit KYC information'
+                "
+              >
+                <ng-container *ngIf="!canEditKYC">
+                  Edit
+                  <i class="fa-solid fa-edit ms-1"></i>
+                </ng-container>
+                <ng-container *ngIf="canEditKYC">
+                  Cancel
+                  <i class="fa-solid fa-times ms-1"></i>
+                </ng-container>
+              </button>
             </h3>
 
-            <form>
+            <form [formGroup]="KYCInfoForm" (ngSubmit)="submitKYCInfo()">
               <div class="row">
                 <div class="col-12">
                   <div class="row">
-                    <div class="col-12 col-md-8 profile-basic">
+                    <div class="col-12 col-md-10 profile-basic">
                       <!-- Heading, info about kyc -->
                       <ul class="personal-info">
                         <li>
@@ -41,13 +50,62 @@
                           </div>
                         </li>
                       </ul>
+
+                      <!-- from md size container -->
+                      <div class="col-12 d-md-block d-none">
+                        <div class="row">
+                          <div
+                            class="form-group col-12 col-md-6 col-lg-6 col-xl-4"
+                          >
+                            <label for="firstName">First Name</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="firstName"
+                              placeholder="First Name"
+
+                              formControlName="firstName"
+                            />
+                          </div>
+
+                          <div
+                            class="form-group col-12 col-md-6 col-lg-6 col-xl-4"
+                          >
+                            <label for="middleName">Middle Name</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="middleName"
+                              placeholder="Middle Name"
+                              readonly
+                              formControlName="middleName"
+                            />
+                          </div>
+                          <div
+                            class="form-group col-12 col-md-6 col-xl-4 d-block d-md-none d-xl-block"
+                          >
+                            <label for="lastName">Last Name</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="lastName"
+                              placeholder="Last Name"
+                              readonly
+                              formControlName="lastName"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div
-                      class="col-12 col-md-4 d-flex justify-content-md-end flex-row flex-wrap"
+                      class="col-12 col-md-2 d-flex justify-content-md-end flex-row flex-wrap"
                     >
-                      <ul class="personal-info image">
-                        <li>
+                      <ul
+                        class="personal-info image"
+                        style="width: 100% !important"
+                      >
+                        <li style="width: 100% !important">
                           <div class="title text-nowrap">Selfie Image:</div>
                           <div class="text d-block d-md-none">
                             <button
@@ -59,10 +117,38 @@
                             </button>
                           </div>
                         </li>
+                        <li class="d-flex d-md-none">
+                          <div class="title text-nowrap">School ID:</div>
+                          <div class="text d-block d-md-none">
+                            <button
+                              matRipple
+                              class="btn btn-sm btn-primary"
+                              (click)="displayDocument('schoolID')"
+                            >
+                              <i class="fa-solid fa-search-plus"></i> View
+                            </button>
+                          </div>
+                        </li>
+                        <li class="d-flex d-md-none">
+                          <div class="title text-nowrap">Passport:</div>
+                          <div class="text d-block d-md-none">
+                            <button
+                              matRipple
+                              class="btn btn-sm btn-primary"
+                              (click)="
+                               displayDocument('internationalPassport')
+                              "
+                            >
+                              <i class="fa-solid fa-search-plus"></i> View
+                            </button>
+                          </div>
+                        </li>
                       </ul>
-                      <!-- Profile Image Section -->
+
+                      <!-- Selfie Image -->
                       <div
                         class="profile-img d-none d-md-block"
+                        style="width: 100% !important"
                         (click)="displayImage(content, record.selfie)"
                       >
                         <img
@@ -94,6 +180,7 @@
                               class="img-fluid zoom-on-hover"
                               loading="lazy"
                               [style.transform]="currentZoomLevel"
+                              style="cursor: zoom-in"
                             />
                           </div>
                         </div>
@@ -142,16 +229,305 @@
                           </button>
 
                           <!-- Reject Button -->
-                          <button
+                          <!-- <button
                             type="button"
                             matRipple
                             *ngIf="record.selfie"
                             class="btn btn-danger"
                           >
                             <i class="fa-solid fa-times"></i> Reject
-                          </button>
+                          </button> -->
                         </div>
                       </ng-template>
+                    </div>
+
+                    <div class="col-12 d-md-none d-block">
+                      <div class="row">
+                        <div class="form-group col-12">
+                          <label for="firstName">First Name</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="firstName"
+                            placeholder="First Name"
+                            readonly
+                            formControlName="firstName"
+                          />
+                        </div>
+
+                        <div class="form-group col-12">
+                          <label for="middleName">Middle Name</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="middleName"
+                            placeholder="Middle Name"
+                            readonly
+                            formControlName="middleName"
+                          />
+                        </div>
+
+                        <div class="form-group col-12">
+                          <label for="lastName">Last Name</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="lastName"
+                            placeholder="Last Name"
+                            readonly
+                            formControlName="lastName"
+                          />
+                        </div>
+
+                        <div class="form-group col-12">
+                          <label for="email">Email</label>
+                          <input
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            placeholder="Email"
+                            readonly
+                            formControlName="email"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-10">
+                      <div class="row">
+                        <!-- Gender -->
+                        <div
+                          class="form-group col-12 col-md-6 col-lg-6 col-xl-4"
+                        >
+                          <label for="gender">Gender</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="gender"
+                            placeholder="Gender"
+                            readonly
+                            formControlName="gender"
+                          />
+                        </div>
+
+                        <!-- DOB -->
+                        <div
+                          class="form-group col-12 col-md-6 col-lg-6 col-xl-4"
+                        >
+                          <label for="dob">Date of Birth</label>
+                          <admin-app-custom-input
+                            [type]="'date'"
+                            [pipeType]="'date'"
+                            [pipeArgs]="['medium']"
+                            placeholder="Enter a date"
+                            [value]="DOB"
+                            [disabled]="!canEditKYC"
+                            [readonly]="!canEditKYC"
+                            [required]="true"
+                            (valueChanged)="
+                              KYCInfoForm.get('dob')?.patchValue($event)
+                            "
+                          ></admin-app-custom-input>
+                        </div>
+
+                        <div
+                          class="form-group col-12 col-md-6 col-lg-6 col-xl-4"
+                        >
+                          <label for="email2">Email</label>
+                          <input
+                            type="email"
+                            class="form-control"
+                            id="email2"
+                            placeholder="Email"
+                            readonly
+                            formControlName="email"
+                          />
+                        </div>
+
+                        <div
+                          class="form-group col-12 col-md-6 col-lg-6 col-xl-4"
+                        >
+                          <label for="phone">Phone</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="phone"
+                            placeholder="Phone"
+                            readonly
+                            formControlName="phone"
+                          />
+                        </div>
+
+                        <!-- Occupation -->
+                        <div
+                          class="form-group col-12 col-md-4 col-lg-4 col-xl-4"
+                        >
+                          <label for="occupation">Occupation</label>
+                          <input
+                            type="text"
+                            class="form-control text-uppercase"
+                            id="occupation"
+                            placeholder="Occupation"
+                            readonly
+                            formControlName="occupation"
+                          />
+                        </div>
+
+                        <!-- Address (textarea)-->
+                        <div class="form-group col-12 col-md-8 col-xl-4">
+                          <label for="address">Address</label>
+                          <textarea
+                            class="form-control"
+                            [class.address]="
+                              KYCInfoForm.get('address')?.value?.split('\n')
+                                ?.length === 1
+                            "
+                            id="address"
+                            placeholder="Address"
+                            readonly
+                            formControlName="address"
+                            [rows]="
+                              KYCInfoForm.get('address')?.value?.split('\n')
+                                ?.length
+                            "
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-2 d-none d-md-flex justify-content-end">
+                      <div class="row">
+                        <div class="col-12">
+                          <!-- School ID Section -->
+                          <ul class="personal-info image">
+                            <li>
+                              <div class="title text-nowrap">School ID:</div>
+                              <div class="text d-block d-md-none">
+                                <button
+                                  matRipple
+                                  class="btn btn-sm btn-primary"
+                                  (click)="displayDocument('schoolID')"
+                                >
+                                  <i class="fa-solid fa-search-plus"></i> View
+                                </button>
+                              </div>
+                            </li>
+                          </ul>
+
+                          <div
+                            class="profile-img d-none d-md-block"
+                            style="width: 100% !important"
+                            [class.shadow-sm]="
+                              checkURLforFileTypes(record.schoolID) ===
+                              'application/pdf'
+                            "
+                            (click)="displayDocument('schoolID')"
+                          >
+                            <img
+                              *ngIf="
+                                checkURLforFileTypes(record.schoolID) ===
+                                'image/*' || record.schoolID === null
+                              "
+                              [src]="record.schoolID"
+                              alt="User School ID"
+                              class="img-fluid"
+                              #schoolID
+                              (error)="handleImageError(schoolID)"
+                              loading="lazy"
+                            />
+
+                            <pdf-viewer
+                              *ngIf="
+                                checkURLforFileTypes(
+                                  record.internationalPassport
+                                ) === 'application/pdf'
+                              "
+                              [src]="record.internationalPassport"
+                              [rotation]="0"
+                              [original-size]="false"
+                              [show-all]="false"
+                              [fit-to-page]="false"
+                              [zoom-scale]="'page-width'"
+                              [stick-to-page]="false"
+                              [render-text]="true"
+                              [external-link-target]="'blank'"
+                              [autoresize]="true"
+                              [show-borders]="false"
+                              style="width: 100%; height: 100vh"
+                            ></pdf-viewer>
+                            <div class="overlay">
+                              <i class="zoom-icon fas fa-search-plus"></i>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-12 mt-2">
+                          <!-- International Passport Section -->
+                          <ul class="personal-info image">
+                            <li>
+                              <div class="title text-nowrap">Passport:</div>
+                              <div class="text d-block d-md-none">
+                                <button
+                                  matRipple
+                                  class="btn btn-sm btn-primary"
+                                  (click)="displayDocument('internationalPassport')"
+                                >
+                                  <i class="fa-solid fa-search-plus"></i> View
+                                </button>
+                              </div>
+                            </li>
+                          </ul>
+
+                          <div
+                            class="profile-img d-none d-md-block"
+                            style="width: 100% !important"
+                            [class.shadow-sm]="
+                              checkURLforFileTypes(
+                                record.internationalPassport
+                              ) === 'application/pdf'
+                            "
+                            (click)="displayDocument('internationalPassport')"
+                          >
+                            <img
+                              *ngIf="
+                                checkURLforFileTypes(
+                                  record.internationalPassport
+                                ) === 'image/*' || record.internationalPassport === null
+                              "
+                              [src]="record.internationalPassport"
+                              alt="User School ID"
+                              class="img-fluid"
+                              #internationalPassport
+                              (error)="handleImageError(internationalPassport)"
+                              loading="lazy"
+                            />
+
+                            <pdf-viewer
+                              *ngIf="
+                                checkURLforFileTypes(
+                                  record.internationalPassport
+                                ) === 'application/pdf'
+                              "
+                              [src]="record.internationalPassport"
+                              [rotation]="0"
+                              [original-size]="false"
+                              [show-all]="false"
+                              [fit-to-page]="false"
+                              [zoom-scale]="'page-width'"
+                              [stick-to-page]="false"
+                              [render-text]="true"
+                              [external-link-target]="'blank'"
+                              [autoresize]="true"
+                              [show-borders]="false"
+                              style="width: 100%; height: 100vh"
+                            ></pdf-viewer>
+
+                            <div class="overlay">
+                              <i class="zoom-icon fas fa-search-plus"></i>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

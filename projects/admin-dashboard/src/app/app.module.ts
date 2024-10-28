@@ -21,6 +21,8 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { appReducers } from './core/store/reducers';
 import { appEffects } from './core/store/effects';
+import { SharedFormsModule } from '../shared/forms/forms.module';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @NgModule({
   declarations: [
@@ -50,6 +52,8 @@ import { appEffects } from './core/store/effects';
     // AdminDashboardModule,
     SharedComponentsModule,
     SharedDirectivesModule,
+    SharedFormsModule,
+    PdfViewerModule,
     // Store
     StoreModule.forRoot(appReducers),
     EffectsModule.forRoot(appEffects), // Use centralized effects array

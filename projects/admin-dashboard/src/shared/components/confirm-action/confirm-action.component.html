@@ -1,0 +1,20 @@
+<div class="modal-header">
+  <h3>{{ title }}</h3>
+</div>
+
+<div class="modal-body">
+  <p>{{ message }}</p>
+</div>
+
+<div class="modal-footer">
+  <button
+    class="btn btn-{{ confirmClass }}"
+    (click)="confirm()"
+    [innerHTML]="confirmText"
+  ></button>
+  <button
+    class="btn btn-secondary"
+    (click)="close()"
+    [innerHTML]="cancelText"
+  ></button>
+</div>
