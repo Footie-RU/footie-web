@@ -102,10 +102,10 @@ export interface Delivery {
 export interface UserKYC {
   id: string;
   userId: string;
-  internationalPassport: any;  // Image file
-  russianPassport?: any;        // Image file
-  schoolID: any;               // Image file
-  selfie: any;                 // Image file
+  internationalPassport: string;  // Image file
+  russianPassport?: string;        // Image file
+  schoolID: string;               // Image file
+  selfie: string;                 // Image file
   createdAt: string;
   updatedAt: string;
   status: 'pending' | 'approved' | 'rejected';
@@ -125,4 +125,5 @@ export enum KYCStep {
   SUBMIT_SCHOOL_ID = 'submit_school_id',
   REVIEW = 'review',
   COMPLETE = 'complete',
+  REJECTED = 'rejected',
 }

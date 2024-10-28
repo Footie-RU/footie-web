@@ -8,7 +8,12 @@ import { StarRatingComponent } from './star-rating/star-rating.component';
 import { KycListComponent } from './kyc-list/kyc-list.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { RouterModule } from '@angular/router';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { InfoCardComponent } from './info-card/info-card.component';
+import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { MatRippleModule } from '@angular/material/core';
+import { ConfirmActionComponent } from './confirm-action/confirm-action.component';
 
 
 
@@ -19,6 +24,9 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     LoadingScreenComponent,
     StarRatingComponent,
     KycListComponent,
+    InfoCardComponent,
+    PdfViewerComponent,
+    ConfirmActionComponent,
   ],
   imports: [
     CommonModule,
@@ -26,7 +34,11 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     ReactiveFormsModule,
     NgxSkeletonLoaderModule,
     RouterModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    NgbDatepickerModule,
+    NgbTooltipModule,
+    PdfViewerModule,
+    MatRippleModule
   ],
   exports: [
     LoadingButtonComponent,
@@ -34,6 +46,8 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     LoadingScreenComponent,
     StarRatingComponent,
     KycListComponent,
+    InfoCardComponent,
+    PdfViewerComponent,
   ]
 })
 export class SharedComponentsModule { }

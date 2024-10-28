@@ -13,7 +13,6 @@ export class LoginRedirectGuard implements CanActivate {
   canActivate(): Observable<boolean> {
     return this.authService.checkIfLoggedIn().pipe(
       map(isAuthenticated => {
-        console.log(isAuthenticated)
         if (isAuthenticated) {
           this.router.navigate(['/dashboard']);
           return false; // Prevent access to the login page

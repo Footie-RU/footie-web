@@ -1,0 +1,21 @@
+<div class="form-group m-0">
+  <div
+    class="custom-input form-control"
+    *ngIf="!disabled"
+    contenteditable="true"
+    [attr.placeholder]="placeholder"
+    [ariaReadOnly]="readonly"
+    [ariaDisabled]="disabled"
+    (input)="onInput($event)"
+    [innerHTML]="formattedValue | safeHtml">
+  </div>
+
+  <div
+    class="custom-input form-control"
+    *ngIf="disabled"
+    [attr.placeholder]="placeholder"
+    [ariaReadOnly]="readonly"
+    [ariaDisabled]="disabled"
+    [innerHTML]="formattedValue | safeHtml">
+    </div>
+</div>

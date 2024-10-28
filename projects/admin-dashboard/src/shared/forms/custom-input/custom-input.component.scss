@@ -1,0 +1,12 @@
+.custom-input {
+  cursor: text;
+  background-color: #f7f7f7 !important;
+  display: flex;
+  align-items: center;
+
+  &:focus,
+  &:active {
+    border: 1px solid #01674f57 !important;
+    box-shadow: 0 0 0 0.2rem #01674f3d !important;
+  }
+}

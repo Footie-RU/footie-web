@@ -21130,7 +21130,7 @@ th.width-64 {
   width: 120px;
   position: absolute;
 }
-@media (max-width: 575px) {
+@media (max-width: 991px) {
   .profile-view .profile-img-wrap {
     position: relative;
     margin: 0 auto;
@@ -21149,7 +21149,7 @@ th.width-64 {
   margin-left: 140px;
   padding-right: 50px;
 }
-@media (max-width: 575px) {
+@media (max-width: 768px) {
   .profile-view .profile-basic {
     margin-left: 0;
     padding-right: 0;
@@ -21170,6 +21170,7 @@ th.width-64 {
     border-bottom: 2px dashed #d3d3d4;
     margin: 0 0 20px;
     padding: 0 0 20px;
+    text-align: center;
   }
 }
 .profile-view .profile-basic .profile-info-left .user-name {
@@ -21333,7 +21334,7 @@ th.width-64 {
   background: #fff;
   overflow: hidden;
 }
-@media (max-width: 575px) {
+@media (max-width: 992px) {
   .profile-img-wrap {
     position: relative;
     margin: 0 auto;

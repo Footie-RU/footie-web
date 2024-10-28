@@ -1,0 +1,164 @@
+<div class="tab-content documents">
+  <div
+    id="emp_profile"
+    class="pro-overview tab-pane fade show active"
+    role="tabpanel"
+  >
+    <div class="row">
+      <div class="col-12 d-flex">
+        <div class="card profile-box flex-fill">
+          <div class="card-body">
+            <h3 class="card-title">Documents</h3>
+
+            <div class="container-fluid px-0">
+              <div class="row">
+                <div class="col-12">
+                  <div class="row">
+                    <div class="col-12 col-md-10 profile-basic">
+                      <!-- Heading, info about kyc -->
+                      <ul class="personal-info">
+                        <li>
+                          <div class="title">KYC Type:</div>
+                          <div class="text">Individual</div>
+                        </li>
+                        <li>
+                          <div class="title">KYC Verification:</div>
+                          <div class="text">{{ showKYCStep(record.step) }}</div>
+                        </li>
+                        <li>
+                          <div class="title">Submitted On:</div>
+                          <div class="text">
+                            {{ record.createdAt | date : "medium" }}
+                          </div>
+                        </li>
+                        <li>
+                          <div class="title">Submitted Documents</div>
+                          <div class="text">
+                            {{ submittedDocuments | number }}
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="document-slider pt-3">
+                  <ngb-carousel>
+                    <ng-template *ngFor="let doc of documents" ngbSlide>
+                      <div class="document-tab">
+                        <div class="id-contn" (click)="displayDocument(doc.id)">
+                          <img
+                            *ngIf="
+                              checkURLforFileTypes(doc.src) ===
+                              'image/*' || !doc.src
+                            "
+                            [src]="doc.src"
+                            alt="User {{ doc.title }}"
+                            class="img-fluid"
+                            #slide
+                            (error)="handleImageError(slide)"
+                            loading="lazy"
+                          />
+
+                          <pdf-viewer
+                            *ngIf="
+                              checkURLforFileTypes(doc.src) ===
+                              'application/pdf'
+                            "
+                            [src]="doc.src"
+                            [rotation]="0"
+                            [original-size]="false"
+                            [show-all]="false"
+                            [fit-to-page]="false"
+                            [zoom-scale]="'page-width'"
+                            [stick-to-page]="false"
+                            [render-text]="true"
+                            [external-link-target]="'blank'"
+                            [autoresize]="true"
+                            [show-borders]="false"
+                            style="width: 100%; height: 100vh"
+                          ></pdf-viewer>
+
+                          <div class="overlay">
+                            <i class="zoom-icon fas fa-search-plus"></i>
+                          </div>
+
+                          <div class="bottom-tab">
+                            <div class="tab-title">{{ doc.title }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </ng-template>
+                  </ngb-carousel>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #content let-modal>
+  <div class="modal-body p-0 overflow-hidden">
+    <div
+      class="img-container"
+      (mousemove)="zoomImage($event)"
+      (mouseleave)="resetZoom($event)"
+    >
+      <img
+        #selfieImage2
+        [src]="activeModalImage"
+        (error)="handleImageError(selfieImage2)"
+        alt="User selfie preview"
+        class="img-fluid zoom-on-hover"
+        loading="lazy"
+        [style.transform]="currentZoomLevel"
+        style="cursor: zoom-in"
+      />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <!-- Zoom In Button -->
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="zoomIn(selfieImage2)"
+    >
+      <i class="fa-solid fa-search-plus"></i>
+    </button>
+
+    <!-- Zoom Out Button -->
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="zoomOut(selfieImage2)"
+    >
+      <i class="fa-solid fa-search-minus"></i>
+    </button>
+
+    <!-- Close Button -->
+    <button
+      type="button"
+      matRipple
+      class="btn"
+      style="background-color: #e36f00 !important; color: #fff !important"
+      (click)="modal.close('Close click')"
+    >
+      <i class="fa-solid fa-times"></i> Close
+    </button>
+
+    <!-- Download Button -->
+    <button
+      type="button"
+      matRipple
+      *ngIf="activeModalImage"
+      class="btn btn-secondary"
+      (click)="downloadImage(activeModalImage)"
+    >
+      <i class="fa-solid fa-download"></i> Download
+    </button>
+  </div>
+</ng-template>

@@ -1,4 +1,4 @@
-<button [type]="type" [class]="'btn-' + class + ' loading-button'" [disabled]="disabled">
+<button [type]="type" [class]="'btn-' + class + ' btn loading-button'" [disabled]="disabled || loading" matRipple [ngbTooltip]="toolTip" (click)="clicked.emit()">
   <ng-container *ngIf="!loading">{{ buttonText }}</ng-container>
   <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
 </button>

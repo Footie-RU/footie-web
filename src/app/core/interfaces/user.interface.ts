@@ -77,6 +77,7 @@ export enum KYCStep {
   SUBMIT_RUSSIAN_PASSPORT = 'submit_russian_passport',
   REVIEW = 'review',
   COMPLETE = 'complete',
+  REJECTED = 'rejected',
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

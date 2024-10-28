@@ -1,0 +1,15 @@
+<ul class="nav nav-tabs nav-tabs-bottom pb-0 flex-nowrap" role="tablist">
+  <li *ngFor="let tab of tabs" class="nav-item m-0" role="presentation">
+    <a
+      class="nav-link tab text-nowrap"
+      [class.active]="tab.active"
+      role="tab"
+      #tabElement
+      [class.disabled]="tab.disabled"
+      (click)="handleTabChange(tab);scrollTabIntoView(tabElement)"
+      [routerLink]="['./']"
+      [queryParams]="{ tab: tab.content }"
+      >{{ tab.title }}</a
+    >
+  </li>
+</ul>

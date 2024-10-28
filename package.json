@@ -37,6 +37,7 @@
     "bootstrap-icons": "^1.11.3",
     "chance": "^1.1.11",
     "class-validator": "^0.14.1",
+    "ng2-pdf-viewer": "^9.0.0",
     "ngx-clipboard": "^16.0.0",
     "ngx-device-detector": "^5.0.1",
     "ngx-file-drop": "^15.0.0",
@@ -44,6 +45,7 @@
     "ngx-online-status": "^2.0.0",
     "ngx-skeleton-loader": "^7.0.0",
     "ngx-toastr": "^16.2.0",
+    "pdfjs-dist": "^2.10.377",
     "rxjs": "^7.8.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.12.0"

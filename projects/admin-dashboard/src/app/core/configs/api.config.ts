@@ -42,6 +42,7 @@ export const ApiEndpoints = {
       verifyKYCDocuments: (userId: string) => `${environment.apiUrl}/kyc/verifyDocuments/${userId}`,
       list: () => `${environment.apiUrl}/kyc/list`,
       update: (userId: string) => `${environment.apiUrl}/kyc/update/${userId}`,
+      updateStatus: (userId: string, status: 'pending' | 'approved' | 'rejected') => `${environment.apiUrl}/kyc/updateStatus/${userId}/${status}`,
     }
   },
   map: {
