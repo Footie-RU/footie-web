@@ -12,6 +12,7 @@ import {
 import { FormControl, FormGroup, FormBuilder } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { showKYCStep } from 'projects/admin-dashboard/src/app/core/helpers/index.helper';
 import { kycDocumentsFileTypes } from 'projects/admin-dashboard/src/app/core/interfaces/index.interface';
 import {
   KYCStep,
@@ -55,6 +56,9 @@ export class KycInfoComponent implements OnInit {
   get DOB(): string {
     return this.record?.user.dob ? this.record.user.dob : 'N/A';
   }
+
+  // Helpers
+  showKYCStep = showKYCStep;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -106,19 +110,6 @@ export class KycInfoComponent implements OnInit {
     if (!this.canEditKYC) {
       this.initForm();
     }
-  }
-
-  showKYCStep(step: KYCStep): string {
-    const stepLabels = {
-      [KYCStep.START]: 'Started, Pending Documents',
-      [KYCStep.SUBMIT_SELFIE]: 'Missing Selfie',
-      [KYCStep.SUBMIT_INTERNATIONAL_PASSPORT]: 'Missing International Passport',
-      [KYCStep.SUBMIT_RUSSIAN_PASSPORT]: 'Missing Russian Passport',
-      [KYCStep.SUBMIT_SCHOOL_ID]: 'Missing School ID',
-      [KYCStep.REVIEW]: 'In Review',
-      [KYCStep.COMPLETE]: 'Completed',
-    };
-    return stepLabels[step] || 'Unknown Step';
   }
 
   displayDocument(

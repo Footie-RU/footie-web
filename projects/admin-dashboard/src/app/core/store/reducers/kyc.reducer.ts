@@ -90,8 +90,9 @@ export const kycReducer = createReducer(
   on(kycActions.updateKycStatus, (state) => ({ ...state, saving: true })),
   on(kycActions.updateKycStatusSuccess, (state, { kycRecord }) => {
     const kycRecords = state.kycRecords.map((record) =>
-      record.userId === kycRecord.userId ? kycRecord : record
+      record.id === kycRecord.id ? { ...record, ...kycRecord } : record
     );
+
     return {
       ...state,
       approving: false,

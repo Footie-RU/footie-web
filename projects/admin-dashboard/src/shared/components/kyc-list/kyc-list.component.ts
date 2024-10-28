@@ -1,6 +1,7 @@
 import { Component, inject, Input } from '@angular/core';
 import { NgbCalendar, NgbDate, NgbDateParserFormatter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Store } from '@ngrx/store';
+import { showKYCStep } from 'projects/admin-dashboard/src/app/core/helpers/index.helper';
 import { User, UserKYC, KYCStep } from 'projects/admin-dashboard/src/app/core/interfaces/user.interface';
 import { kycActions } from 'projects/admin-dashboard/src/app/core/store/actions/kyc.action';
 import { KycState } from 'projects/admin-dashboard/src/app/core/store/reducers/kyc.reducer';
@@ -10,13 +11,13 @@ import { Observable, combineLatest, map } from 'rxjs';
 @Component({
   selector: 'admin-app-kyc-list',
   templateUrl: './kyc-list.component.html',
-  styleUrls: ['./kyc-list.component.scss']
+  styleUrls: ['./kyc-list.component.scss'],
 })
 export class KycListComponent {
   user: User | null = JSON.parse(localStorage.getItem('user') as string);
 
   @Input() tableTitle: string = '';
-  @Input() tableFooter: { text: string, link: string } = { text: '', link: '' };
+  @Input() tableFooter: { text: string; link: string } = { text: '', link: '' };
   @Input() showTableFilter: boolean = true;
 
   kycRecords$: Observable<UserKYC[]>;
@@ -27,7 +28,10 @@ export class KycListComponent {
   activeFilter: string = 'none';
   filters: string[] = ['none', 'status', 'date'];
 
-  statusFilters: { label: string, value: 'pending' | 'approved' | 'rejected' }[] = [
+  statusFilters: {
+    label: string;
+    value: 'pending' | 'approved' | 'rejected';
+  }[] = [
     { label: 'Pending', value: 'pending' },
     { label: 'Approved', value: 'approved' },
     { label: 'Rejected', value: 'rejected' },
@@ -38,22 +42,40 @@ export class KycListComponent {
   formatter = inject(NgbDateParserFormatter);
   currentDate: NgbDateStruct = this.calendar.getToday();
   minDateRange: NgbDateStruct = { year: 2024, month: 9, day: 1 };
-  maxDateRange: NgbDateStruct = { year: this.currentDate.year, month: this.currentDate.month, day: this.currentDate.day };
-
-  dateRangeModel: { startDate: Date | null, endDate: Date | null } = {
-    startDate: new Date(this.minDateRange.year, this.minDateRange.month - 1, this.minDateRange.day),
-    endDate: new Date(this.maxDateRange.year, this.maxDateRange.month - 1, this.maxDateRange.day)
+  maxDateRange: NgbDateStruct = {
+    year: this.currentDate.year,
+    month: this.currentDate.month,
+    day: this.currentDate.day,
   };
-  dateRange: { startDate: Date | null, endDate: Date | null } = { ...this.dateRangeModel };
 
-  constructor(
-    private store: Store<{ kyc: KycState }>
-  ) {
+  dateRangeModel: { startDate: Date | null; endDate: Date | null } = {
+    startDate: new Date(
+      this.minDateRange.year,
+      this.minDateRange.month - 1,
+      this.minDateRange.day
+    ),
+    endDate: new Date(
+      this.maxDateRange.year,
+      this.maxDateRange.month - 1,
+      this.maxDateRange.day
+    ),
+  };
+  dateRange: { startDate: Date | null; endDate: Date | null } = {
+    ...this.dateRangeModel,
+  };
+
+  // Helpers
+  showKYCStep = showKYCStep;
+
+  constructor(private store: Store<{ kyc: KycState }>) {
     let kycRecordsSub = this.store.select('kyc', 'kycRecords');
     this.filteredKycRecords$ = this.store.select(selectFilteredKycRecords);
 
     // If there are no filters, return the original records; otherwise, return the filtered ones.
-    this.kycRecords$ = combineLatest([kycRecordsSub, this.filteredKycRecords$]).pipe(
+    this.kycRecords$ = combineLatest([
+      kycRecordsSub,
+      this.filteredKycRecords$,
+    ]).pipe(
       map(([kycRecords, filteredRecords]) => {
         // Check if filteredRecords is the same as kycRecords (no filtering applied)
         const isFiltered = filteredRecords.length !== kycRecords.length;
@@ -70,7 +92,7 @@ export class KycListComponent {
     );
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   onSearchTermChange(query: string): void {
     this.store.dispatch(kycActions.updateFilter({ filters: { query } }));
@@ -91,34 +113,47 @@ export class KycListComponent {
     if (type === 'start') {
       this.dateRange = {
         ...this.dateRange,
-        startDate: date
-      }
+        startDate: date,
+      };
     } else {
       this.dateRange = {
         ...this.dateRange,
-        endDate: date
-      }
+        endDate: date,
+      };
     }
 
-    this.store.dispatch(kycActions.updateFilter({ filters: { dateRange: this.dateRange } }));
+    this.store.dispatch(
+      kycActions.updateFilter({ filters: { dateRange: this.dateRange } })
+    );
   }
 
   clearFilters(): void {
     this.onFilterChange('none');
     this.onStatusChange('pending');
     this.dateRangeModel = {
-      startDate: new Date(this.minDateRange.year, this.minDateRange.month - 1, this.minDateRange.day),
-      endDate: new Date(this.maxDateRange.year, this.maxDateRange.month - 1, this.maxDateRange.day)
+      startDate: new Date(
+        this.minDateRange.year,
+        this.minDateRange.month - 1,
+        this.minDateRange.day
+      ),
+      endDate: new Date(
+        this.maxDateRange.year,
+        this.maxDateRange.month - 1,
+        this.maxDateRange.day
+      ),
     };
     this.dateRange = this.dateRangeModel;
-    this.store.dispatch(kycActions.updateFilter({
-      filters: {
-        dateRange: {
-          startDate: null, endDate: null
+    this.store.dispatch(
+      kycActions.updateFilter({
+        filters: {
+          dateRange: {
+            startDate: null,
+            endDate: null,
+          },
+          query: null,
         },
-        query: null
-      }
-    }));
+      })
+    );
   }
 
   refreshKYCRecords(): void {
@@ -129,20 +164,9 @@ export class KycListComponent {
     event.src = 'assets/images/icons/profile-icon.svg';
   }
 
-  showKYCStep(step: KYCStep): string {
-    const stepLabels = {
-      [KYCStep.START]: 'Started, Pending Documents',
-      [KYCStep.SUBMIT_SELFIE]: 'Missing Selfie',
-      [KYCStep.SUBMIT_INTERNATIONAL_PASSPORT]: 'Missing International Passport',
-      [KYCStep.SUBMIT_RUSSIAN_PASSPORT]: 'Missing Russian Passport',
-      [KYCStep.SUBMIT_SCHOOL_ID]: 'Missing School ID',
-      [KYCStep.REVIEW]: 'In Review',
-      [KYCStep.COMPLETE]: 'Completed',
-    };
-    return stepLabels[step] || 'Unknown Step';
-  }
-
-  getKYCStatusBootstrapClass(status: 'pending' | 'approved' | 'rejected'): string {
+  getKYCStatusBootstrapClass(
+    status: 'pending' | 'approved' | 'rejected'
+  ): string {
     const statusClasses = {
       pending: 'warning',
       approved: 'success',

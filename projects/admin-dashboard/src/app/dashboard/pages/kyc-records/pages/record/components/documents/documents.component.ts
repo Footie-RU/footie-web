@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, Renderer2, SimpleChanges, TemplateRef } from '@angular/core';
 import { NgbCarouselConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { showKYCStep } from 'projects/admin-dashboard/src/app/core/helpers/index.helper';
 import { kycDocumentsFileTypes } from 'projects/admin-dashboard/src/app/core/interfaces/index.interface';
 import { KYCStep, UserKYC } from 'projects/admin-dashboard/src/app/core/interfaces/user.interface';
 import { PdfViewerComponent } from 'projects/admin-dashboard/src/shared/components/pdf-viewer/pdf-viewer.component';
@@ -40,6 +41,9 @@ export class DocumentsComponent implements OnChanges {
   zoomFactor: number = 1; // To track zoom level
 
   activeModalImage: string | null = null;
+
+  // Helpers
+  showKYCStep = showKYCStep;
 
   constructor(
     config: NgbCarouselConfig,
@@ -93,19 +97,6 @@ export class DocumentsComponent implements OnChanges {
 
   handleImageError(imageEl: HTMLImageElement): void {
     imageEl.src = `https://dummyimage.com/600x400/000/fff&text=Doc+Not+Found`;
-  }
-
-  showKYCStep(step: KYCStep): string {
-    const stepLabels = {
-      [KYCStep.START]: 'Started, Pending Documents',
-      [KYCStep.SUBMIT_SELFIE]: 'Missing Selfie',
-      [KYCStep.SUBMIT_INTERNATIONAL_PASSPORT]: 'Missing International Passport',
-      [KYCStep.SUBMIT_RUSSIAN_PASSPORT]: 'Missing Russian Passport',
-      [KYCStep.SUBMIT_SCHOOL_ID]: 'Missing School ID',
-      [KYCStep.REVIEW]: 'In Review',
-      [KYCStep.COMPLETE]: 'Completed',
-    };
-    return stepLabels[step] || 'Unknown Step';
   }
 
   openPdfViewer(pdfSrc: string) {

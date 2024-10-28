@@ -14,6 +14,7 @@ import { ConfirmActionComponent } from 'projects/admin-dashboard/src/shared/comp
 import { map, Observable } from 'rxjs';
 import { RejectKycComponent } from './components/reject-kyc/reject-kyc.component';
 import { ToastrService } from 'ngx-toastr';
+import { showKYCStep } from 'projects/admin-dashboard/src/app/core/helpers/index.helper';
 
 @Component({
   selector: 'admin-app-record',
@@ -64,6 +65,9 @@ export class RecordComponent implements AfterContentChecked {
   get canSave(): boolean {
     return this.canEditKYC || this.canEditDocuments;
   }
+
+  // Helpers
+  showKYCStep = showKYCStep;
 
   constructor(
     private store: Store<{ kyc: KycState }>,
@@ -174,19 +178,6 @@ export class RecordComponent implements AfterContentChecked {
       t.active = t.content === tab.content;
     });
     this.activeTab = tab;
-  }
-
-  showKYCStep(step: KYCStep): string {
-    const stepLabels = {
-      [KYCStep.START]: 'Started',
-      [KYCStep.SUBMIT_SELFIE]: 'Missing Selfie',
-      [KYCStep.SUBMIT_INTERNATIONAL_PASSPORT]: 'Missing International Passport',
-      [KYCStep.SUBMIT_RUSSIAN_PASSPORT]: 'Missing Russian Passport',
-      [KYCStep.SUBMIT_SCHOOL_ID]: 'Missing School ID',
-      [KYCStep.REVIEW]: 'In Review',
-      [KYCStep.COMPLETE]: 'Completed',
-    };
-    return stepLabels[step] || 'Unknown Step';
   }
 
   reject(record: UserKYC): void {

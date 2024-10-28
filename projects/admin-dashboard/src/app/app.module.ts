@@ -23,6 +23,7 @@ import { appReducers } from './core/store/reducers';
 import { appEffects } from './core/store/effects';
 import { SharedFormsModule } from '../shared/forms/forms.module';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { HttpToastInterceptor } from './core/interceptors/toastr.interceptor';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,11 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpToastInterceptor,
       multi: true,
     }
   ],

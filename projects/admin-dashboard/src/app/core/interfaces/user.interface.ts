@@ -125,4 +125,5 @@ export enum KYCStep {
   SUBMIT_SCHOOL_ID = 'submit_school_id',
   REVIEW = 'review',
   COMPLETE = 'complete',
+  REJECTED = 'rejected',
 }

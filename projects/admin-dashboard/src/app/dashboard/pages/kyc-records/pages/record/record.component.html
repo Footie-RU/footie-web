@@ -467,7 +467,7 @@
           <footiedrop-web-loading-button
             [buttonText]="'Approve'"
             [loading]="(approving$ | async) ? true : false"
-            [disabled]="isDisabled(record)"
+            [disabled]="isDisabled(record) || (rejecting$ | async) ? true : false"
             class="success"
             toolTip="Approve KYC"
             (clicked)="approve(record)"
@@ -477,7 +477,7 @@
           <footiedrop-web-loading-button
             [buttonText]="'Reject'"
             [loading]="(rejecting$ | async) ? true : false"
-            [disabled]="isDisabled(record)"
+            [disabled]="isDisabled(record) || (approving$ | async) ? true : false"
             class="danger"
             toolTip="Reject KYC"
             (clicked)="reject(record)"
