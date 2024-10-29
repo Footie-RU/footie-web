@@ -1,4 +1,10 @@
-import { Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -9,11 +15,12 @@ import { KycService } from 'src/app/core/services/kyc.service';
 import { environment } from 'src/environments/environment';
 import { KYCIsNeededComponent } from '../../modals/kyc-is-needed/kyc-is-needed.component';
 import { DocFile } from './index.interface';
+import { KycFailedComponent } from '../../modals/kyc-failed/kyc-failed.component';
 
 @Component({
   selector: 'footiedrop-web-start-kyc',
   templateUrl: './start-kyc.component.html',
-  styleUrls: ['./start-kyc.component.scss']
+  styleUrls: ['./start-kyc.component.scss'],
 })
 export class StartKycComponent implements OnInit {
   user!: User;
@@ -23,12 +30,21 @@ export class StartKycComponent implements OnInit {
 
   KYC!: UserKYC;
 
-  get userData(): { email: string, userId: string } {
+  get userData(): { email: string; userId: string } {
     return JSON.parse(localStorage.getItem('userSessionData') as string);
   }
 
   get kycHasAllDocuments(): boolean {
-    return this.KYC && this.KYC.internationalPassport && this.KYC.schoolID && this.KYC.selfie;
+    return (
+      this.KYC &&
+      this.KYC.internationalPassport &&
+      this.KYC.schoolID &&
+      this.KYC.selfie
+    );
+  }
+
+  get kycFailefAnchorElementHrefMailToMessage(): string {
+    return `mailto:support@footiedrop.ru?subject=KYC%20Failed%20-%20${this.user.email}&body=Hello%20FootieDrop%20Support%2C%0D%0A%0D%0AI%20am%20writing%20to%20report%20that%20my%20KYC%20has%20been%20rejected.%20Please%20help%20me%20resolve%20this%20issue.%0D%0A%0D%0ARegards%2C%0D%0A${this.user.firstName}%20${this.user.lastName}`;
   }
 
   constructor(
@@ -46,7 +62,7 @@ export class StartKycComponent implements OnInit {
         if (this.user && this.user.kyc) {
           this.KYC = this.user.kyc;
           this.checkKYC(this.user.kyc, true);
-        };
+        }
 
         this.initiateKYC();
       } else if (this.userData) {
@@ -69,7 +85,12 @@ export class StartKycComponent implements OnInit {
       (fetchedUser) => {
         if (fetchedUser) {
           this.user = fetchedUser;
-          if (!this.isMobile && !this.isTablet && this.user && !this.qrCodeData) {
+          if (
+            !this.isMobile &&
+            !this.isTablet &&
+            this.user &&
+            !this.qrCodeData
+          ) {
             // generate qr code for desktop to navigate to mobile
             this.generateQRCode();
           }
@@ -78,7 +99,7 @@ export class StartKycComponent implements OnInit {
       (error) => {
         this.router.navigate(['/login']);
       }
-    )
+    );
   }
 
   ngOnInit(): void {
@@ -91,10 +112,36 @@ export class StartKycComponent implements OnInit {
     };
   }
 
-  disableForm: boolean = false;
-  submitButtonLabel: string = 'Upload Documents';
+  get disableForm(): boolean {
+   let disabled: boolean = false;
+
+   if (this.KYC) {
+      if (this.KYC.status === 'pending' && this.KYC.step !== KYCStep.START) {
+        disabled = true;
+      }
+
+      if (this.KYC.status === 'rejected' && this.KYC.step === KYCStep.REJECTED) {
+        disabled = true;
+      }
+
+      if (this.KYC.status === 'approved' && this.KYC.step === KYCStep.COMPLETE) {
+        disabled = true;
+      }
+   }
+
+   return disabled;
+  }
+
+  get kycFailed(): boolean {
+    return this.KYC && this.KYC.status === 'rejected';
+  }
+
+  get submitButtonLabel(): string {
+    return this.disableForm ? 'Under Review' : 'Submit';
+  }
 
   initiateKYC() {
+    this.loading = true;
     this.kycService.initiateKYC(this.user.id).subscribe(
       (response) => {
         this.loading = false;
@@ -110,14 +157,16 @@ export class StartKycComponent implements OnInit {
         this.loading = false;
         this.toaster.error(error.message);
       }
-    )
+    );
   }
 
   private checkKYC(kyc?: UserKYC, showToast?: boolean): void {
     if (kyc) {
       // Update the form with the KYC details and disable the control
       if (kyc.internationalPassport) {
-        this.KYCForm.get('internationalPassport')?.setValue(kyc.internationalPassport);
+        this.KYCForm.get('internationalPassport')?.setValue(
+          kyc.internationalPassport
+        );
         this.KYCForm.get('internationalPassport')?.disable();
       }
 
@@ -131,15 +180,11 @@ export class StartKycComponent implements OnInit {
         this.KYCForm.get('selfie')?.disable();
       }
 
-      if (kyc.status === "pending" && this.KYCForm.valid) {
-        this.disableForm = true;
-        this.submitButtonLabel = 'Under Review';
-        if (showToast) this.toaster.info('Your KYC is pending verification. You will be notified once it is approved.');
-      };
-
-      if (kyc.status === "pending" && kyc.step === KYCStep.REVIEW) {
-        this.disableForm = true;
-        this.submitButtonLabel = 'Under Review';
+      if (kyc.status === 'pending' && this.KYCForm.valid) {
+        if (showToast)
+          this.toaster.info(
+            'Your KYC is pending verification. You will be notified once it is approved.'
+          );
       }
 
       this.loading = false;
@@ -148,7 +193,9 @@ export class StartKycComponent implements OnInit {
 
   qrCodeData: string = '';
   generateQRCode() {
-    let host = environment.production ? 'https://footiedrop.netlify.app' : 'http://192.168.61.246:4200';
+    let host = environment.production
+      ? 'https://footiedrop.netlify.app'
+      : 'http://192.168.61.246:4200';
     this.qrCodeData = `${host}/kyc/continue?userId=${this.user.id}`;
   }
 
@@ -160,49 +207,89 @@ export class StartKycComponent implements OnInit {
     });
   }
 
+  showWhyKYCFailedModal(): void {
+    const modalRef = this.modalService.open(KycFailedComponent, {
+      size: 'lg',
+      centered: true,
+      scrollable: true,
+    });
+    modalRef.componentInstance.reason = this.KYC.rejectionReason;
+  }
+
   // International Passport Element View
-  @ViewChild('internationalPassportElement') internationalPassportElement: ElementRef<HTMLInputElement> | undefined;
+  @ViewChild('internationalPassportElement') internationalPassportElement:
+    | ElementRef<HTMLInputElement>
+    | undefined;
   internationalPassportFile: DocFile | undefined;
 
   // School ID Element View
-  @ViewChild('schoolIDElement') schoolIDElement: ElementRef<HTMLInputElement> | undefined;
+  @ViewChild('schoolIDElement') schoolIDElement:
+    | ElementRef<HTMLInputElement>
+    | undefined;
   schoolIDFile: DocFile | undefined;
 
   // Selfie Element View
-  @ViewChild('selfieElement') selfieElement: ElementRef<HTMLInputElement> | undefined;
+  @ViewChild('selfieElement') selfieElement:
+    | ElementRef<HTMLInputElement>
+    | undefined;
   selfieFile: DocFile | undefined;
 
   maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
 
   // Method to trigger the file input click based on the document type
   proceed(item: 'internationalPassport' | 'schoolID' | 'selfie') {
-    if (item === 'internationalPassport' && this.internationalPassportElement && this.KYCForm.get('internationalPassport')?.enabled) {
+    if (
+      item === 'internationalPassport' &&
+      this.internationalPassportElement &&
+      this.KYCForm.get('internationalPassport')?.enabled
+    ) {
       this.internationalPassportElement.nativeElement.click();
-    } else if (item === 'schoolID' && this.schoolIDElement && this.KYCForm.get('schoolID')?.enabled) {
+    } else if (
+      item === 'schoolID' &&
+      this.schoolIDElement &&
+      this.KYCForm.get('schoolID')?.enabled
+    ) {
       this.schoolIDElement.nativeElement.click();
-    } else if (item === 'selfie' && this.selfieElement && this.KYCForm.get('selfie')?.enabled) {
+    } else if (
+      item === 'selfie' &&
+      this.selfieElement &&
+      this.KYCForm.get('selfie')?.enabled
+    ) {
       this.selfieElement.nativeElement.click();
     }
   }
 
   // Method to handle file change when user selects a file
-  onFileChange(event: any, item: 'internationalPassport' | 'schoolID' | 'selfie') {
+  onFileChange(
+    event: any,
+    item: 'internationalPassport' | 'schoolID' | 'selfie'
+  ) {
     const file: File = event.target.files[0]; // Get the selected file
 
     if (file) {
       // Get allowed file types from the input element
-      const allowedFileTypes: string[] = event.target.accept.split(',').map((type: string) => type.trim());
+      const allowedFileTypes: string[] = event.target.accept
+        .split(',')
+        .map((type: string) => type.trim());
 
       // Validate file type
       if (!allowedFileTypes.includes(file.type)) {
-        console.error(`Invalid file type for ${item}. Only ${allowedFileTypes.join(', ')} are allowed.`);
-        this.toaster.error(`Invalid file type. Only ${allowedFileTypes.join(', ')} are allowed.`);
+        console.error(
+          `Invalid file type for ${item}. Only ${allowedFileTypes.join(
+            ', '
+          )} are allowed.`
+        );
+        this.toaster.error(
+          `Invalid file type. Only ${allowedFileTypes.join(', ')} are allowed.`
+        );
         return;
       }
 
       // Validate file size
       if (file.size > this.maxFileSize) {
-        console.error(`File size for ${item} exceeds the maximum limit of 5MB.`);
+        console.error(
+          `File size for ${item} exceeds the maximum limit of 5MB.`
+        );
         this.toaster.error('File size exceeds the maximum limit of 5MB.');
         return;
       }
@@ -211,7 +298,9 @@ export class StartKycComponent implements OnInit {
       const currentDate = new Date().toLocaleString();
 
       // Rename the file to include the user's name
-      const newFileName = `${this.user.firstName}_${this.user.lastName}_${this.user.email}_${item}_${currentDate.replace(/[^0-9]/g, '')}`;
+      const newFileName = `${this.user.firstName}_${this.user.lastName}_${
+        this.user.email
+      }_${item}_${currentDate.replace(/[^0-9]/g, '')}`;
 
       // Rename the file object (if necessary) or handle it for backend upload
       const renamedFile = new File([file], newFileName, { type: file.type });
@@ -221,7 +310,7 @@ export class StartKycComponent implements OnInit {
         name: renamedFile.name,
         size: `${(file.size / 1024).toFixed(2)} KB`, // Convert size to KB
         date: currentDate,
-        type: renamedFile.type
+        type: renamedFile.type,
       };
 
       // Assign the file details to the respective document field
@@ -241,8 +330,9 @@ export class StartKycComponent implements OnInit {
   }
 
   // modal content TemplateRef<any>
-  @ViewChild('confirmKYCSubmissionModal') confirmKYCSubmissionModal: TemplateRef<any> | undefined;
-
+  @ViewChild('confirmKYCSubmissionModal') confirmKYCSubmissionModal:
+    | TemplateRef<any>
+    | undefined;
 
   submitKYC(): void {
     if (this.KYCForm.valid && !this.kycHasAllDocuments) {
@@ -265,28 +355,62 @@ export class StartKycComponent implements OnInit {
       internationalPassport: controls['internationalPassport'].value,
       schoolID: controls['schoolID'].value,
       selfie: controls['selfie'].value,
-    }
+    };
+
+    (Object.keys(payload) as (keyof typeof payload)[]).forEach((key) => {
+      if (this.KYC[key as keyof UserKYC]) {
+        delete payload[key as keyof typeof payload];
+      }
+    });
 
     this.kycService.submitKYC(this.user.id, payload).subscribe(
       (response) => {
         if (response) {
-          this.toaster.success(response.message || 'KYC submitted successfully.', '', {
-            timeOut: 10000,
-          });
+          this.toaster.success(
+            response.message || 'KYC submitted successfully.',
+            '',
+            {
+              timeOut: 10000,
+            }
+          );
           // check KYC
           this.checkKYC(response.data);
           this.KYC = response.data;
           this.user.kyc = this.KYC;
         } else {
           this.loading = false;
-          this.toaster.error('An error occurred while submitting KYC. Please try again.');
+          this.toaster.error(
+            'An error occurred while submitting KYC. Please try again.'
+          );
         }
       },
       (error) => {
         console.error('Error submitting KYC:', error);
         this.loading = false;
-        this.toaster.error(error.message || 'An error occurred while submitting KYC. Please try again.');
+        this.toaster.error(
+          error.message ||
+            'An error occurred while submitting KYC. Please try again.'
+        );
       }
     );
+  }
+
+  retryKYC(): void {
+    // Change the status to null
+    this.KYC = {
+      ...this.KYC,
+      status: null,
+      internationalPassport: null,
+      schoolID: null,
+      selfie: null,
+      russianPassport: null,
+      rejectionReason: undefined,
+      step: KYCStep.START,
+    };
+    this.user.kyc = this.KYC;
+
+    // Reset the form
+    this.KYCForm.reset();
+    this.KYCForm.enable();
   }
 }

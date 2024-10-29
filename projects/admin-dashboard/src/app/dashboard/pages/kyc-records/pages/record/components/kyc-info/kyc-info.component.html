@@ -10,22 +10,47 @@
           <div class="card-body">
             <h3 class="card-title d-flex justify-content-between">
               KYC Information
-              <button
-                (click)="editKYCInfo()"
-                class="btn btn-sm btn-light"
-                [ngbTooltip]="
-                  canEditKYC ? 'Cancel changes' : 'Edit KYC information'
-                "
+
+              <div
+                class="col-auto d-flex justify-content-end align-items-center"
               >
-                <ng-container *ngIf="!canEditKYC">
-                  Edit
-                  <i class="fa-solid fa-edit ms-1"></i>
-                </ng-container>
-                <ng-container *ngIf="canEditKYC">
-                  Cancel
-                  <i class="fa-solid fa-times ms-1"></i>
-                </ng-container>
-              </button>
+                <!-- Edit button -->
+                <button
+                  (click)="editKYCInfo()"
+                  class="btn btn-sm btn-light"
+                  [ngbTooltip]="
+                    canEditKYC ? 'Cancel changes' : 'Edit KYC information'
+                  "
+                >
+                  <ng-container *ngIf="!canEditKYC">
+                    Edit
+                    <i class="fa-solid fa-edit ms-1"></i>
+                  </ng-container>
+                  <ng-container *ngIf="canEditKYC">
+                    Cancel
+                    <i class="fa-solid fa-times ms-1"></i>
+                  </ng-container>
+                </button>
+
+                <!-- Delete button -->
+                <button
+                  (click)="deleteDocument.emit()"
+                  class="btn btn-sm btn-danger ms-2"
+                  [ngbTooltip]="'Delete KYC information'"
+                >
+                  <ng-container *ngIf="!deleting">
+                    Delete
+                    <i class="fa-solid fa-trash ms-1"></i>
+                  </ng-container>
+                  <ng-container *ngIf="deleting">
+                    <span
+                      class="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  </ng-container>
+                </button>
+              </div>
             </h3>
 
             <form [formGroup]="KYCInfoForm" (ngSubmit)="submitKYCInfo()">
@@ -63,7 +88,6 @@
                               class="form-control"
                               id="firstName"
                               placeholder="First Name"
-
                               formControlName="firstName"
                             />
                           </div>
@@ -135,9 +159,7 @@
                             <button
                               matRipple
                               class="btn btn-sm btn-primary"
-                              (click)="
-                               displayDocument('internationalPassport')
-                              "
+                              (click)="displayDocument('internationalPassport')"
                             >
                               <i class="fa-solid fa-search-plus"></i> View
                             </button>
@@ -426,7 +448,7 @@
                             <img
                               *ngIf="
                                 checkURLforFileTypes(record.schoolID) ===
-                                'image/*' || record.schoolID === null
+                                  'image/*' || record.schoolID === null
                               "
                               [src]="record.schoolID"
                               alt="User School ID"
@@ -470,7 +492,9 @@
                                 <button
                                   matRipple
                                   class="btn btn-sm btn-primary"
-                                  (click)="displayDocument('internationalPassport')"
+                                  (click)="
+                                    displayDocument('internationalPassport')
+                                  "
                                 >
                                   <i class="fa-solid fa-search-plus"></i> View
                                 </button>
@@ -492,7 +516,8 @@
                               *ngIf="
                                 checkURLforFileTypes(
                                   record.internationalPassport
-                                ) === 'image/*' || record.internationalPassport === null
+                                ) === 'image/*' ||
+                                record.internationalPassport === null
                               "
                               [src]="record.internationalPassport"
                               alt="User School ID"

@@ -209,9 +209,29 @@ export class KycService {
     rejectionReason?: string
   ): Observable<RequestResponse> {
     return this.httpClient
-      .patch<RequestResponse>(ApiEndpoints.users.kyc.updateStatus(userId, status), {
-        status,
-        rejectionReason,
+      .patch<RequestResponse>(
+        ApiEndpoints.users.kyc.updateStatus(userId, status),
+        {
+          status,
+          rejectionReason,
+        }
+      )
+      .pipe(
+        switchMap((response) =>
+          response.result === 'success' ? of(response) : throwError(response)
+        ),
+        catchError((error) => throwError(error.error))
+      );
+  }
+
+  deleteKYCRecord(
+    id: string,
+    userId: string,
+    adminId: string
+  ): Observable<RequestResponse> {
+    return this.httpClient
+      .delete<RequestResponse>(ApiEndpoints.users.kyc.delete(id, userId), {
+        body: { adminId: adminId },
       })
       .pipe(
         switchMap((response) =>

@@ -42,8 +42,11 @@ export class KycInfoComponent implements OnInit {
   @Input() record: UserKYC | undefined;
   canEditKYC: boolean = false;
 
+  @Input() deleting: boolean = false;
+
   @Output() editKYC: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() formChanged: EventEmitter<any> = new EventEmitter<any>();
+  @Output() deleteDocument: EventEmitter<void> = new EventEmitter<void>();
 
   KYCInfoForm!: FormGroup<KYCInfoFormControls>;
 

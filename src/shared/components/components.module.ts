@@ -5,6 +5,7 @@ import { SwitchControlComponent } from './switch-control/switch-control.componen
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LoadingScreenComponent } from './loading-screen/loading-screen.component';
 import { StarRatingComponent } from './star-rating/star-rating.component';
+import { MatRippleModule } from '@angular/material/core';
 
 
 
@@ -18,7 +19,8 @@ import { StarRatingComponent } from './star-rating/star-rating.component';
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatRippleModule
   ],
   exports: [
     LoadingButtonComponent,

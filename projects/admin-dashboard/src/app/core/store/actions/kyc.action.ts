@@ -27,6 +27,13 @@ const updateKycStatus = createAction('[KYC] Update KYC Status', props<{ kycRecor
 const updateKycStatusSuccess = createAction('[KYC] Update KYC Status Success', props<{ kycRecord: UserKYC }>());
 const updateKycStatusFailure = createAction('[KYC] Update KYC Status Failure', props<{ error: string }>());
 
+// Delete KYC Record
+const deleteKycRecord = createAction('[KYC] Delete KYC Record', props<{ id: string, userId: string, adminId: string }>());
+const deleteKycRecordSuccess = createAction('[KYC] Delete KYC Record Success', props<{ userId: string }>());
+const deleteKycRecordFailure = createAction('[KYC] Delete KYC Record Failure', props<{ error: string }>());
+
+
+
 export const kycActions = {
   loadKycRecords,
   loadKycRecordsSuccess,
@@ -43,4 +50,7 @@ export const kycActions = {
   updateKycStatusFailure,
   approveKycRecord,
   rejectKycRecord,
-}
+  deleteKycRecord,
+  deleteKycRecordSuccess,
+  deleteKycRecordFailure,
+};

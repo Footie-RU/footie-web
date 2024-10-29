@@ -10,6 +10,7 @@ import {
   selectKycFilters,
 } from '../selectors/kyc.selector';
 import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class KycEffects {
@@ -17,7 +18,8 @@ export class KycEffects {
     private actions$: Actions,
     private kycService: KycService,
     private store: Store,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router: Router
   ) {}
 
   /**
@@ -145,6 +147,27 @@ export class KycEffects {
               return of(kycActions.updateKycStatusFailure({ error }));
             })
           )
+      )
+    )
+  );
+
+  /**
+   * Delete KYC record effect
+   */
+  deleteKycRecord$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(kycActions.deleteKycRecord),
+      mergeMap(({ id, userId, adminId }) =>
+        this.kycService.deleteKYCRecord(id, userId, adminId).pipe(
+          map(() => {
+            this.router.navigate(['/dashboard/kyc-records']);
+            return kycActions.deleteKycRecordSuccess({ userId })
+          }),
+          catchError((error) => {
+            this.toastr.error(error.message, 'Error');
+            return of(kycActions.deleteKycRecordFailure({ error }));
+          })
+        )
       )
     )
   );

@@ -30,8 +30,15 @@
                     }"
                     >{{ record.status }}</span
                   >
-                  <br *ngIf="record.status === 'rejected' && record.rejectionReason">
-                  <small *ngIf="record.status === 'rejected' && record.rejectionReason"
+                  <br
+                    *ngIf="
+                      record.status === 'rejected' && record.rejectionReason
+                    "
+                  />
+                  <small
+                    *ngIf="
+                      record.status === 'rejected' && record.rejectionReason
+                    "
                     ><a
                       class="text-danger"
                       (click)="displayRejectionReason(rejectionReasonModal)"
@@ -228,8 +235,10 @@
     <admin-app-kyc-info
       *ngIf="activeTab.content === 'kyc'"
       [record]="record"
+      [deleting]="(deleting$ | async) ? true : false"
       (editKYC)="canEditKYC = $event"
       (formChanged)="kycPayload = $event"
+      (deleteDocument)="deleteKyc()"
     ></admin-app-kyc-info>
 
     <!-- Documents Tab -->
@@ -449,7 +458,11 @@
 </ng-template>
 
 <!-- Action buttons fixed bottom -->
-<div *ngIf="kycRecord$ | async as record;" class="container-fluid bg-wrapper" style="z-index: 1000">
+<div
+  *ngIf="kycRecord$ | async as record"
+  class="container-fluid bg-wrapper"
+  style="z-index: 1000"
+>
   <div class="row justify-content-center">
     <div class="col-md-8 col-12 py-3">
       <div class="row">
@@ -467,7 +480,9 @@
           <footiedrop-web-loading-button
             [buttonText]="'Approve'"
             [loading]="(approving$ | async) ? true : false"
-            [disabled]="isDisabled(record) || (rejecting$ | async) ? true : false"
+            [disabled]="
+              isDisabled(record) || (rejecting$ | async) ? true : false
+            "
             class="success"
             toolTip="Approve KYC"
             (clicked)="approve(record)"
@@ -477,7 +492,9 @@
           <footiedrop-web-loading-button
             [buttonText]="'Reject'"
             [loading]="(rejecting$ | async) ? true : false"
-            [disabled]="isDisabled(record) || (approving$ | async) ? true : false"
+            [disabled]="
+              isDisabled(record) || (approving$ | async) ? true : false
+            "
             class="danger"
             toolTip="Reject KYC"
             (clicked)="reject(record)"
