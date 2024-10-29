@@ -11,3 +11,9 @@ export enum Languages {
   FRENCH = 'fr',
   RUSSIAN = 'ru',
 }
+
+export interface LoginResponse {
+  data: any;
+  message?: string;
+  result: 'success' | 'error';
+}

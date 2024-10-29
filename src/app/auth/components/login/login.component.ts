@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -70,41 +71,43 @@ export class LoginComponent {
             });
             this.router.navigate(['/dashboard']);
           },
-          error => {
+          (error: HttpErrorResponse) => {
             this.loggingIn = false;
             if (Array.isArray(error.message)) {
               error.message.forEach((err: string) => {
                 this.toastr.error(err);
               });
             } else {
-              this.toastr.error(error);
+              this.toastr.error(error.error.message);
             };
           }
         )
       } else {
-        this.authService.loginByPhone({
-          phone: phone.replace(/[\s-]/g, ''),
-          password: password,
-          role: role
-        }).subscribe(
-          response => {
-            this.loggingIn = false;
-            this.toastr.success('Sign In Successful!', '', {
-              timeOut: 1000
-            });
-            this.router.navigate(['/dashboard']);
-          },
-          error => {
-            this.loggingIn = false;
-            if (typeof error === 'string') {
-              this.toastr.error(error);
-            } else if (error.error.message) {
-              error.error.message.forEach((err: string) => {
-                this.toastr.error(err);
+        this.authService
+          .loginByPhone({
+            phone: phone.replace(/[\s-]/g, ''),
+            password: password,
+            role: role,
+          })
+          .subscribe(
+            (response) => {
+              this.loggingIn = false;
+              this.toastr.success('Sign In Successful!', '', {
+                timeOut: 1000,
               });
-            };
-          }
-        )
+              this.router.navigate(['/dashboard']);
+            },
+            (error: HttpErrorResponse) => {
+              this.loggingIn = false;
+              if (Array.isArray(error.message)) {
+                error.message.forEach((err: string) => {
+                  this.toastr.error(err);
+                });
+              } else {
+                this.toastr.error(error.error.message);
+              }
+            }
+          );
       }
     }
   }
