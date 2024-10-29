@@ -8,6 +8,7 @@ export interface KycState {
   loading: boolean;
   approving: boolean;
   rejecting: boolean;
+  deleting: boolean;
   saving: boolean;
   error: any;
   filters: {
@@ -29,6 +30,7 @@ const initialState: KycState = {
   loading: false,
   approving: false,
   rejecting: false,
+  deleting: false,
   saving: false,
   error: null,
   filters: {
@@ -106,6 +108,22 @@ export const kycReducer = createReducer(
     saving: false,
     approving: false,
     rejecting: false,
+    error,
+  })),
+  on(kycActions.deleteKycRecord, (state) => ({ ...state, deleting: true })),
+  on(kycActions.deleteKycRecordSuccess, (state, { userId }) => {
+    const kycRecords = state.kycRecords.filter(
+      (record) => record.user.id !== userId
+    );
+    return {
+      ...state,
+      kycRecords,
+      deleting: false,
+    };
+  }),
+  on(kycActions.deleteKycRecordFailure, (state, { error }) => ({
+    ...state,
+    deleting: false,
     error,
   }))
 );

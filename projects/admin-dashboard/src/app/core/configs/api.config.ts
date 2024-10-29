@@ -29,21 +29,35 @@ export const ApiEndpoints = {
       ChangeLanguage: () => `${environment.apiUrl}/settings/changeLanguage`,
       ChangePassword: () => `${environment.apiUrl}/settings/changePassword`,
       ChangeEmail: () => `${environment.apiUrl}/settings/updateEmail`,
-      ChangePhoneNumber: () => `${environment.apiUrl}/settings/updatePhoneNumber`,
+      ChangePhoneNumber: () =>
+        `${environment.apiUrl}/settings/updatePhoneNumber`,
       UpdateAddress: () => `${environment.apiUrl}/settings/updateAddress`,
-      UpdateCommunicationPreference: () => `${environment.apiUrl}/settings/updateCommunicationPreferences`,
-      UpdateProfile: (userId: string) => `${environment.apiUrl}/settings/updateProfile/${userId}`,
+      UpdateCommunicationPreference: () =>
+        `${environment.apiUrl}/settings/updateCommunicationPreferences`,
+      UpdateProfile: (userId: string) =>
+        `${environment.apiUrl}/settings/updateProfile/${userId}`,
     },
     kyc: {
-      initiateKYC: (userId: string) => `${environment.apiUrl}/kyc/initiate/${userId}`,
-      getUserByEmailForKYC: (email: string) => `${environment.apiUrl}/users/kyc/user/${email}`,
-      getUserByIDForKYC: (id: string) => `${environment.apiUrl}/users/kyc/user/id/${id}`,
-      uploadDocument: (userId: string, file: 'internationalPassport' | 'schoolID' | 'selfie') => `${environment.apiUrl}/kyc/uploadDocument/${userId}/${file}`,
-      verifyKYCDocuments: (userId: string) => `${environment.apiUrl}/kyc/verifyDocuments/${userId}`,
+      initiateKYC: (userId: string) =>
+        `${environment.apiUrl}/kyc/initiate/${userId}`,
+      getUserByEmailForKYC: (email: string) =>
+        `${environment.apiUrl}/users/kyc/user/${email}`,
+      getUserByIDForKYC: (id: string) =>
+        `${environment.apiUrl}/users/kyc/user/id/${id}`,
+      uploadDocument: (
+        userId: string,
+        file: 'internationalPassport' | 'schoolID' | 'selfie'
+      ) => `${environment.apiUrl}/kyc/uploadDocument/${userId}/${file}`,
+      verifyKYCDocuments: (userId: string) =>
+        `${environment.apiUrl}/kyc/verifyDocuments/${userId}`,
       list: () => `${environment.apiUrl}/kyc/list`,
       update: (userId: string) => `${environment.apiUrl}/kyc/update/${userId}`,
-      updateStatus: (userId: string, status: 'pending' | 'approved' | 'rejected') => `${environment.apiUrl}/kyc/updateStatus/${userId}/${status}`,
-    }
+      updateStatus: (
+        userId: string,
+        status: 'pending' | 'approved' | 'rejected'
+      ) => `${environment.apiUrl}/kyc/updateStatus/${userId}/${status}`,
+      delete: (id: string, userId: string) => `${environment.apiUrl}/kyc/delete/${id}/${userId}`,
+    },
   },
   map: {
     yandex_key: '2215fdbd-83bb-4c46-9c52-faffd29f5d91',

@@ -30,13 +30,19 @@
         </div>
 
         <div *ngIf="isMobile || isTablet" class="col-12 text-center">
-          <h1 class="heading fw-bold fs-1">Let’s Verify KYC</h1>
-          <p *ngIf="!kycHasAllDocuments" class="sub-heading px-3">
+          <h1 class="heading fw-bold fs-1" *ngIf="!kycFailed">Let’s Verify KYC</h1>
+          <h1 class="heading fw-bold fs-1" *ngIf="kycFailed">Your KYC Verification Failed</h1>
+
+          <p *ngIf="!kycHasAllDocuments && !kycFailed" class="sub-heading px-3">
             Please submit the following documents to verify your profile
           </p>
-          <p *ngIf="kycHasAllDocuments" class="sub-heading px-3">
+          <p *ngIf="kycHasAllDocuments && !kycFailed" class="sub-heading px-3">
             <!-- KYC under review -->
             Your KYC is under review. You will be notified once it is approved.
+          </p>
+          <p *ngIf="kycFailed" class="sub-heading px-3">
+            <!-- KYC failed -->
+            If you have any questions, please contact <a [href]="kycFailefAnchorElementHrefMailToMessage">support</a> or check below to see why your KYC failed.
           </p>
         </div>
 
@@ -50,7 +56,7 @@
             [class.disabled]="loading"
           >
             <div class="col-12 mb-4">
-              <div class="row">
+              <div class="row" *ngIf="!kycFailed">
                 <div
                   role="button"
                   matRipple
@@ -114,9 +120,20 @@
                         document</small
                       >
                     </div>
-                    <div class="col-auto">
-                      <i *ngIf="!KYCForm.get('internationalPassport')?.value" class="bi bi-chevron-right fs-3"></i>
-                      <i *ngIf="KYCForm.get('internationalPassport')?.value" class="bi bi-check-circle-fill fs-3 text-success"></i>
+                    <div class="col-auto" *ngIf="!kycFailed">
+                      <i
+                        *ngIf="!KYCForm.get('internationalPassport')?.value"
+                        class="bi bi-chevron-right fs-3"
+                      ></i>
+                      <i
+                        *ngIf="KYCForm.get('internationalPassport')?.value"
+                        class="bi bi-check-circle-fill fs-3 text-success"
+                      ></i>
+                    </div>
+                    <div class="col-auto" *ngIf="kycFailed">
+                      <i
+                        class="bi bi-exclamation-triangle-fill fs-3 text-danger"
+                      ></i>
                     </div>
                   </div>
                 </div>
@@ -183,9 +200,20 @@
                         institution</small
                       >
                     </div>
-                    <div class="col-auto">
-                      <i *ngIf="!KYCForm.get('schoolID')?.value" class="bi bi-chevron-right fs-3"></i>
-                      <i *ngIf="KYCForm.get('schoolID')?.value" class="bi bi-check-circle-fill fs-3 text-success"></i>
+                    <div class="col-auto" *ngIf="!kycFailed">
+                      <i
+                        *ngIf="!KYCForm.get('schoolID')?.value"
+                        class="bi bi-chevron-right fs-3"
+                      ></i>
+                      <i
+                        *ngIf="KYCForm.get('schoolID')?.value"
+                        class="bi bi-check-circle-fill fs-3 text-success"
+                      ></i>
+                    </div>
+                    <div class="col-auto" *ngIf="kycFailed">
+                      <i
+                        class="bi bi-exclamation-triangle-fill fs-3 text-danger"
+                      ></i>
                     </div>
                   </div>
                 </div>
@@ -217,16 +245,30 @@
                         your documents</small
                       >
                     </div>
-                    <div class="col-auto">
-                      <i *ngIf="!KYCForm.get('selfie')?.value" class="bi bi-chevron-right fs-3"></i>
-                      <i *ngIf="KYCForm.get('selfie')?.value" class="bi bi-check-circle-fill fs-3 text-success"></i>
+                    <div class="col-auto" *ngIf="!kycFailed">
+                      <i
+                        *ngIf="!KYCForm.get('selfie')?.value"
+                        class="bi bi-chevron-right fs-3"
+                      ></i>
+                      <i
+                        *ngIf="KYCForm.get('selfie')?.value"
+                        class="bi bi-check-circle-fill fs-3 text-success"
+                      ></i>
+                    </div>
+                    <div class="col-auto" *ngIf="kycFailed">
+                      <i
+                        class="bi bi-exclamation-triangle-fill fs-3 text-danger"
+                      ></i>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div *ngIf="!kycHasAllDocuments" class="col-12 d-flex mb-3 align-items-center">
+            <div
+              *ngIf="!kycHasAllDocuments"
+              class="col-12 d-flex mb-3 align-items-center"
+            >
               <i class="bi bi-info-circle me-3"></i>
               <!-- info about file types and sizes -->
               <div class="col">
@@ -241,10 +283,23 @@
             <div class="row">
               <div class="col-12">
                 <footiedrop-web-loading-button
+                  *ngIf="!kycFailed"
                   [buttonText]="submitButtonLabel"
                   [disabled]="KYCForm.invalid || disableForm"
                   [loading]="loading"
+                  type="submit"
                   class="primary"
+                  (clicked)="submitKYC()"
+                ></footiedrop-web-loading-button>
+
+                <footiedrop-web-loading-button
+                  *ngIf="kycFailed"
+                  buttonText="Retry KYC"
+                  type="button"
+                  [loading]="loading"
+                  [disabled]="loading"
+                  class="primary"
+                  (clicked)="retryKYC()"
                 ></footiedrop-web-loading-button>
               </div>
             </div>
@@ -273,12 +328,19 @@
         <div class="col-12 text-center pt-3 pb-5" *ngIf="isMobile || isTablet">
           <small class="mt-4 text-dark">
             <a
+              *ngIf="!kycFailed"
               [class.disabled]="loading"
               aria-hidden="false"
               href="javascript:void(0)"
               (click)="showWhyKYCisNeededModal()"
-              >Why is this needed?</a
-            >
+              >Why is this needed?</a>
+            <a
+              *ngIf="kycFailed"
+              [class.disabled]="loading"
+              aria-hidden="false"
+              href="javascript:void(0)"
+              (click)="showWhyKYCFailedModal()"
+              >Why did my KYC fail?</a>
           </small>
         </div>
 
@@ -336,10 +398,22 @@
   </div>
   <div class="modal-footer">
     <div class="col-5">
-      <button type="button" class="btn btn-danger" (click)="modal.dismiss('Cancel click')">Cancel</button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        (click)="modal.dismiss('Cancel click')"
+      >
+        Cancel
+      </button>
     </div>
     <div class="col">
-      <button type="button" class="btn btn-primary" (click)="proceedToSubmitKYC()">Confirm Upload</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="proceedToSubmitKYC()"
+      >
+        Confirm Upload
+      </button>
     </div>
   </div>
 </ng-template>

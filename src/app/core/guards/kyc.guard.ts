@@ -127,6 +127,9 @@ export class KycGuard implements CanActivate {
         case KYCStep.REVIEW:
           this.router.navigate(['/kyc']);
           break;
+        case KYCStep.COMPLETE:
+          this.router.navigate(['/dashboard']);
+          break;
         default:
           this.initiateKyc(); // If the step is not recognized, re-initiate KYC
           break;
@@ -149,16 +152,17 @@ export class KycGuard implements CanActivate {
  * If the user is a courier, they will be allowed to access the KYC process.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class KycRoleGuard implements CanActivate {
-
-  get userData(): { email: string, userId: string } {
+  get userData(): { email: string; userId: string } {
     return JSON.parse(localStorage.getItem('userSessionData') as string);
   }
 
   get user(): User {
-    return localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null;
+    return localStorage.getItem('user')
+      ? JSON.parse(localStorage.getItem('user') as string)
+      : null;
   }
 
   queryParamUserId: string = '';
@@ -170,7 +174,7 @@ export class KycRoleGuard implements CanActivate {
     private route: ActivatedRoute,
     private kycService: KycService
   ) {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       this.queryParamUserId = params['userId'];
     });
   }
@@ -180,9 +184,13 @@ export class KycRoleGuard implements CanActivate {
     const userData = this.userData;
     const queryParamUserId = this.queryParamUserId;
 
+    if (user) {
+      return of(this.checkUserRole(user));
+    }
+
     if (queryParamUserId) {
       return this.kycService.getUserByIDForVerification(queryParamUserId).pipe(
-        map(fetchedUser => {
+        map((fetchedUser) => {
           if (fetchedUser) {
             return this.checkUserRole(fetchedUser);
           } else {
@@ -191,7 +199,7 @@ export class KycRoleGuard implements CanActivate {
             return false;
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           this.toastr.error('An error occurred. Please try again.');
           this.router.navigate(['/login']);
           return of(false);
@@ -199,13 +207,9 @@ export class KycRoleGuard implements CanActivate {
       );
     }
 
-    if (user) {
-      return of(this.checkUserRole(user));
-    }
-
     if (userData && userData.email) {
       return this.userService.getUserByEmail(userData.email).pipe(
-        map(fetchedUser => {
+        map((fetchedUser) => {
           if (fetchedUser) {
             return this.checkUserRole(fetchedUser);
           } else {
@@ -214,7 +218,7 @@ export class KycRoleGuard implements CanActivate {
             return false;
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           this.toastr.error('An error occurred. Please try again.');
           this.router.navigate(['/login']);
           return of(false);
@@ -229,12 +233,22 @@ export class KycRoleGuard implements CanActivate {
   }
 
   private checkUserRole(user: User): boolean {
-    if (user.role === UserRole.COURIER) {
-      return true; // Allow access if user is a courier
-    } else {
-      this.router.navigate(['/dashboard']); // Redirect to dashboard or another page
-      // this.toastr.error('You do not have access to this page.');
-      return false; // Block access
+    if (user.role === UserRole.COURIER && user.kyc?.status !== 'approved') {
+      // Allow access if user is a courier with pending KYC status
+      return true;
     }
+
+    if (user.role !== UserRole.CUSTOMER && user.kyc?.status === 'approved') {
+      // Block access and redirect non-customer users with approved KYC to dashboard
+      console.log('Redirecting courier with approved KYC');
+      this.router.navigate(['/dashboard']);
+      return false;
+    }
+
+    // Default case: Block access and redirect to dashboard
+    this.router.navigate(['/dashboard']);
+    // Optionally show error message
+    // this.toastr.error('You do not have access to this page.');
+    return false;
   }
 }

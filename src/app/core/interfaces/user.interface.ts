@@ -61,7 +61,7 @@ export interface UserKYC {
   selfie: any;                 // Image file
   createdAt: string;
   updatedAt: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | null;
   rejectionReason?: string;    // Optional, needed only if rejected
   user: User;
   step: KYCStep;

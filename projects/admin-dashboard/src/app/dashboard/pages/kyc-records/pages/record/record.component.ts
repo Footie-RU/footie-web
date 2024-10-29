@@ -26,8 +26,11 @@ export class RecordComponent implements AfterContentChecked {
   loading$!: Observable<boolean>;
   approving$!: Observable<boolean>;
   rejecting$!: Observable<boolean>;
+  deleting$!: Observable<boolean>;
   saving$!: Observable<boolean>;
   error$!: Observable<string | null>;
+
+  user: User | null = JSON.parse(localStorage.getItem('user') as string);
 
   recordID!: string;
   recordUser!: User;
@@ -117,6 +120,7 @@ export class RecordComponent implements AfterContentChecked {
       this.loading$ = this.store.select('kyc', 'loading');
       this.approving$ = this.store.select('kyc', 'approving');
       this.rejecting$ = this.store.select('kyc', 'rejecting');
+      this.deleting$ = this.store.select('kyc', 'deleting');
       this.saving$ = this.store.select('kyc', 'saving');
       this.error$ = this.store.select('kyc', 'error');
     }
@@ -188,8 +192,12 @@ export class RecordComponent implements AfterContentChecked {
     if (!this.isDisabled(record)) this.openConfirmModal('approve');
   }
 
+  deleteKyc(): void {
+    this.openConfirmModal('delete');
+  }
+
   // Method to open the confirm modal
-  openConfirmModal(type: 'reject' | 'approve' = 'reject') {
+  openConfirmModal(type: 'reject' | 'approve' | 'delete' = 'reject') {
     const modalRef = this.modalService.open(ConfirmActionComponent, {
       centered: true,
       backdrop: 'static',
@@ -199,15 +207,21 @@ export class RecordComponent implements AfterContentChecked {
 
     // Customize the modal inputs
     modalRef.componentInstance.title =
-      type === 'reject' ? 'Reject KYC' : 'Approve KYC';
+      type === 'reject'
+        ? 'Reject KYC'
+        : type === 'approve'
+        ? 'Approve KYC'
+        : 'Delete KYC';
     modalRef.componentInstance.message =
       type === 'reject'
         ? 'Are you sure you want to reject this KYC?'
-        : 'Are you sure you want to approve this KYC?';
+        : type === 'approve'
+        ? 'Are you sure you want to approve this KYC?'
+        : 'Are you sure you want to delete this KYC?';
     modalRef.componentInstance.confirmText =
       type === 'reject' ? 'Reject' : 'Yes';
     modalRef.componentInstance.confirmClass =
-      type === 'reject' ? 'danger' : 'success';
+      type === 'reject' || type === 'delete' ? 'danger' : 'success';
 
     // Handle modal result
     modalRef.result
@@ -215,8 +229,10 @@ export class RecordComponent implements AfterContentChecked {
         if (result) {
           if (type === 'reject') {
             this.onConfirm(); // If confirmed
-          } else {
+          } else if (type === 'approve') {
             this.onApprove(); // If approved
+          } else if (type === 'delete') {
+            this.onDelete(); // If deleted
           }
         } else {
           this.onCancel(); // If canceled
@@ -264,6 +280,16 @@ export class RecordComponent implements AfterContentChecked {
       kycActions.rejectKycRecord({
         userId: this.recordUser.id,
         reason,
+      })
+    );
+  }
+
+  onDelete(): void {
+    this.store.dispatch(
+      kycActions.deleteKycRecord({
+        id: this.recordID,
+        userId: this.recordUser.id,
+        adminId: this.user!.id,
       })
     );
   }
