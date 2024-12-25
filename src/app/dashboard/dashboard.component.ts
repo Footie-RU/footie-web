@@ -15,6 +15,7 @@ import { YaGeocoderService, YaReadyEvent } from 'angular8-yandex-maps';
 import { UserLocation } from '../core/interfaces/location.interface';
 import { ThemeService } from '../core/services/theme.service';
 import { LocationService } from '../core/services/location.service';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 @Component({
   selector: 'footiedrop-web-dashboard',
@@ -31,8 +32,28 @@ export class DashboardComponent implements OnDestroy {
   loading: boolean;
   fadeOut: boolean;
 
+  get user(): User {
+    return localStorage.getItem('user')
+      ? JSON.parse(localStorage.getItem('user') as string)
+      : null;
+  }
+
+  UserRole = UserRole;
+
   hideBottomNav: boolean = false;
   hideProfileIcon: boolean = false;
+
+  get isMobile(): boolean {
+    return this.deviceDetectorService.isMobile();
+  }
+
+  get isTablet(): boolean {
+    return this.deviceDetectorService.isTablet();
+  }
+
+  get isDesktop(): boolean {
+    return this.deviceDetectorService.isDesktop();
+  }
 
   constructor(
     private userService: UserService,
@@ -42,7 +63,8 @@ export class DashboardComponent implements OnDestroy {
     private activatedRoute: ActivatedRoute,
     private yaGeocoderService: YaGeocoderService,
     private themeService: ThemeService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private deviceDetectorService: DeviceDetectorService
   ) {
     // Ensure initial theme matches saved preference
     const isDarkMode = this.themeService.isDarkTheme();
@@ -155,7 +177,7 @@ export class DashboardComponent implements OnDestroy {
 
   ngOnDestroy() {
     document.body.classList.remove('dashboard-body');
-    if (this.geoLocationSub) this.geoLocationSub.unsubscribe();
+    if (this.geoLocationSub) this.geoLocationSub?.unsubscribe();
   }
 
   get userCurrentLocation(): Address {
@@ -179,8 +201,8 @@ export class DashboardComponent implements OnDestroy {
           }
         },
         (error: any) => {
+          console.error('An error occurred while fetching location', error);
           this.getAlternativeLocation();
-          console.error(error);
         }
       );
     } else {
@@ -243,5 +265,20 @@ export class DashboardComponent implements OnDestroy {
         this.toastr.error('An error occurred while updating location');
       }
     );
+  }
+
+  get hideHeader(): boolean {
+    let hideHeader = false;
+
+    switch (this.currentPage) {
+      case '':
+        hideHeader = this.user && this.user.role === UserRole.COURIER;
+        break;
+      default:
+        hideHeader = false;
+        break;
+    }
+
+    return hideHeader;
   }
 }

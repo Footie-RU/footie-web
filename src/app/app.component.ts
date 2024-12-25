@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterContentChecked, AfterViewChecked, AfterViewInit, Component } from '@angular/core';
 import { NavigationStart, NavigationEnd, Router, ActivatedRoute } from '@angular/router';
 import { OnlineStatusType, OnlineStatusService } from 'ngx-online-status';
 import { ToastrService } from 'ngx-toastr';
@@ -9,7 +9,7 @@ import { AuthService } from './core/services/auth.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewChecked {
   title = 'footiedrop-web';
   status!: OnlineStatusType;
 
@@ -32,6 +32,13 @@ export class AppComponent {
         toastr.remove(toastr.currentlyActive);
         toastr.success('', 'You are online!', { timeOut: 2500 });
       }
+    });
+  }
+
+  ngAfterViewChecked(): void {
+    document.querySelectorAll('[data-toggle="switchbutton"]').forEach((element) => {
+      //@ts-ignore
+      element.switchButton();
     });
   }
 

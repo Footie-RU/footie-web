@@ -26,6 +26,7 @@ export const ApiEndpoints = {
       `${environment.apiUrl}/users/verifyPasswordResetToken/${token}`,
     updatePassword: () => `${environment.apiUrl}/users/updatePassword`,
     changeEmail: () => `${environment.apiUrl}/users/changeEmail`,
+    toggleStatus: (id: string) => `${environment.apiUrl}/users/${id}/toggle-status`,
     settings: {
       ChangeLanguage: () => `${environment.apiUrl}/settings/changeLanguage`,
       ChangePassword: () => `${environment.apiUrl}/settings/changePassword`,

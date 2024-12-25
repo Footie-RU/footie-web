@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { RecentDeliveriesComponent } from './recent-deliveries/recent-deliveries.component';
 import { CurrentDeliveriesComponent } from './current-deliveries/current-deliveries.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { CourierHeaderNavigationModule } from './courier-header-navigation/courier-header-navigation.module';
 
 
 
@@ -13,18 +14,13 @@ import { MatDialogModule } from '@angular/material/dialog';
   declarations: [
     SelectOrderComponent,
     RecentDeliveriesComponent,
-    CurrentDeliveriesComponent
+    CurrentDeliveriesComponent,
   ],
-  imports: [
-    CommonModule,
-    MatRippleModule,
-    RouterModule,
-    MatDialogModule
-  ],
+  imports: [CommonModule, MatRippleModule, RouterModule, MatDialogModule, CourierHeaderNavigationModule],
   exports: [
     SelectOrderComponent,
     RecentDeliveriesComponent,
-    CurrentDeliveriesComponent
-  ]
+    CurrentDeliveriesComponent,
+  ],
 })
-export class HomeComponentsModule { }
+export class HomeComponentsModule {}

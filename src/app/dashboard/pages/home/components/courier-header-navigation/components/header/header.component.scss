@@ -1,0 +1,55 @@
+header {
+  background-image: url('/assets/images/backgrounds/auth-header-bg.svg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: bottom;
+  position: relative;
+  min-height: 169px;
+  transition: all 0.3s ease;
+  color: white !important;
+
+  .logo {
+    position: absolute;
+    left: 15px;
+    bottom: -19px;
+    z-index: 2;
+  }
+
+  h1 {
+    font-weight: 800;
+    margin: 5px 0px;
+  }
+
+  p {
+    margin: 0;
+
+    span{
+      color: #ffffffd2 !important;
+    font-weight: 600;
+    }
+  }
+}
+
+// laptop & desktop screen sizes
+@media (min-width: 992px) {
+  header {
+    .logo {
+
+      img {
+        width: 150%;
+      }
+    }
+  }
+}
+
+.user-level {
+  height: 33px;
+  span {
+    background-color: #ffffffd2;
+    color: #198754;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}

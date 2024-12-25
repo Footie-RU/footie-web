@@ -130,7 +130,7 @@ export class LocationService {
     event: YaReadyEvent<ymaps.Map>
   ): Promise<number[]> {
     return new Promise((resolve, reject) => {
-      ymaps.geolocation
+      event.ymaps.geolocation
         .get({
           provider: 'yandex',
           mapStateAutoApply: true,

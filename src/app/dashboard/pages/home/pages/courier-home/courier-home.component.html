@@ -1,0 +1,48 @@
+<footiedrop-web-courier-header-navigation></footiedrop-web-courier-header-navigation>
+
+<div class="cntainer-fluid">
+  <div class="col-12" *ngIf="user && user.status">
+    <div
+      class="status"
+      [ngClass]="{
+        online: user.status === 'online',
+        offline: user.status === 'offline'
+      }"
+    >
+      <div class="col-auto status-text">
+        <img class="px-5" src="assets/images/icons/online-arrows.svg" />
+
+        {{ user.status }}
+        <div
+          *ngIf="loading"
+          class="spinner-border text-primary text-light spinner-border-sm"
+          role="status"
+        >
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Switch Button -->
+      <div class="col-auto">
+        <input
+          type="checkbox"
+          data-onlabel=" "
+          data-offlabel=" "
+          data-onstyle="secondary"
+          data-offstyle="dark"
+          data-toggle="switchbutton"
+          [checked]="user.status === 'online'"
+          data-style="ios"
+          data-width="50"
+          data-height="30"
+          matRipple
+          (change)="toggleUserStatus()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="user.status === 'online'" class="col-12 p-5">
+    <h1>cardd</h1>
+  </div>
+</div>

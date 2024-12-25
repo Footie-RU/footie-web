@@ -18,7 +18,7 @@ export class LogoutComponent {
         this.router.navigate(['/login']);
       },
       error => {
-        this.toastr.error('An error occurred while logging out. Please try again later.');
+        this.toastr.error(error || 'An error occurred while logging out. Please try again later.');
       }
     );
   }
