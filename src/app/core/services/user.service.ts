@@ -201,7 +201,25 @@ export class UserService {
   }
 
   getUserStatus(): Observable<'online' | 'offline'> {
-    return of(this.user.status ? this.user.status : 'offline');
+    return this.httpClient
+      .get<RequestResponse>(ApiEndpoints.users.getUserStatus(this.user.id))
+      .pipe(
+        tap((response) => {
+          if (response.result === 'success') {
+            this.updateUserStatus(response.data);
+          }
+        }),
+        switchMap((response) =>
+          response.result === 'success'
+            ? of(response.data.status)
+            : throwError(response.message)
+        ),
+        catchError((error) => throwError(error))
+      );
+  }
+
+  private updateUserStatus(status: 'online' | 'offline'): void {
+    localStorage.setItem('user', JSON.stringify({ ...this.user, status }));
   }
 }
 
@@ -249,7 +267,7 @@ class UserHelperService {
       );
 
       if (!isAllowed) {
-        warnings.push('Service is not available in your current location.');
+        warnings.push('The service is not available in your current location. Learn more about our <a target="_blank" href="/locations">service locations</a>.');
       }
     }
 

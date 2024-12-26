@@ -7,20 +7,30 @@ import { RecentDeliveriesComponent } from './recent-deliveries/recent-deliveries
 import { CurrentDeliveriesComponent } from './current-deliveries/current-deliveries.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { CourierHeaderNavigationModule } from './courier-header-navigation/courier-header-navigation.module';
-
-
+import { CourierSwitchControlComponent } from './switch-control/switch-control.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
     SelectOrderComponent,
     RecentDeliveriesComponent,
     CurrentDeliveriesComponent,
+    CourierSwitchControlComponent,
   ],
-  imports: [CommonModule, MatRippleModule, RouterModule, MatDialogModule, CourierHeaderNavigationModule],
+  imports: [
+    CommonModule,
+    MatRippleModule,
+    RouterModule,
+    MatDialogModule,
+    CourierHeaderNavigationModule,
+    FormsModule,
+    ReactiveFormsModule
+  ],
   exports: [
     SelectOrderComponent,
     RecentDeliveriesComponent,
     CurrentDeliveriesComponent,
+    CourierSwitchControlComponent,
   ],
 })
 export class HomeComponentsModule {}

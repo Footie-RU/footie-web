@@ -1,4 +1,20 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate,
+} from '@angular/animations';
+import {
+  AfterContentChecked,
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { filter, interval, of, Subscription, switchMap } from 'rxjs';
 import { User } from 'src/app/core/interfaces/user.interface';
@@ -8,8 +24,51 @@ import { UserService } from 'src/app/core/services/user.service';
   selector: 'footiedrop-web-courier-home',
   templateUrl: './courier-home.component.html',
   styleUrls: ['./courier-home.component.scss'],
+  animations: [
+    trigger('slideInOut', [
+      state(
+        'offline',
+        style({
+          transform: 'translateY(-100%)', // Moves the element off-screen to the top
+          opacity: 0, // Make it invisible
+          height: '0', // Collapse the element to zero height
+          overflow: 'hidden', // Hide any overflow during the collapse
+        })
+      ),
+      state(
+        'online',
+        style({
+          transform: 'translateY(0)', // Resets the position to its original spot
+          opacity: 1, // Make it fully visible
+          height: '*', // Allow it to expand to its natural height
+        })
+      ),
+      transition('offline <=> online', [
+        animate('0.5s ease-in-out'), // Smooth animation for both states
+      ]),
+    ]),
+    trigger('stickyTop', [
+      state(
+        'offline',
+        style({
+          top: '-30px', // Stick to the top of the screen
+          position: 'relative', // Allow it to scroll with the page
+        })
+      ),
+      state(
+        'online',
+        style({
+          top: '10px',
+          position: 'relative',
+        })
+      ),
+      transition('offline <=> online', [
+        animate('0.5s ease-in-out'), // Smooth animation for both states
+      ]),
+    ]),
+  ],
 })
-export class CourierHomeComponent implements AfterViewInit, OnDestroy {
+export class CourierHomeComponent implements AfterViewInit, OnDestroy, OnInit {
   get user(): User {
     return localStorage.getItem('user')
       ? JSON.parse(localStorage.getItem('user') as string)
@@ -20,14 +79,23 @@ export class CourierHomeComponent implements AfterViewInit, OnDestroy {
     return this.user.status === 'offline' ? 'Offline' : 'Online';
   }
 
-  loading: boolean = false;
+  get warnings(): string[] {
+    return this.user.warnings && this.user.warnings.length > 0 ? this.user.warnings : [];
+  }
 
+  get firstTruncatedWarning(): string {
+    return this.warnings[0].substring(0, 30) + '...';
+  }
+
+  loading: boolean = false;
   private statusCheckInterval$: Subscription | null = null;
 
   constructor(
     private userService: UserService,
     private toastr: ToastrService
   ) {}
+
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     this.setupTabVisibilityListener();
@@ -60,18 +128,7 @@ export class CourierHomeComponent implements AfterViewInit, OnDestroy {
         filter(() => document.visibilityState === 'visible'), // Ensure tab is active
         switchMap(() => this.userService.getUserStatus())
       )
-      .subscribe({
-        next: (response) => {
-          if (response === "online") {
-            console.log('User is online');
-          } else {
-            console.log('User is offline');
-          }
-        },
-        error: (error) => {
-          console.error('Error checking user status:', error);
-        },
-      });
+      .subscribe();
   }
 
   private clearStatusCheckInterval(): void {
