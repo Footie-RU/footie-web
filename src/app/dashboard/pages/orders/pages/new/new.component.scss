@@ -286,3 +286,14 @@ iframe {
   right: 0;
   bottom: 0;
 }
+
+.loading-veil {
+  position: fixed;
+  height: 87px;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  z-index: 999;
+}

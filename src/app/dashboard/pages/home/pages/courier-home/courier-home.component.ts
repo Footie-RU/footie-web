@@ -15,6 +15,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { ToastrService } from 'ngx-toastr';
 import { filter, interval, of, Subscription, switchMap } from 'rxjs';
 import { User } from 'src/app/core/interfaces/user.interface';
@@ -84,15 +85,18 @@ export class CourierHomeComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   get firstTruncatedWarning(): string {
-    return this.warnings[0].substring(0, 30) + '...';
+    return this.warnings.length > 0 ? this.warnings[0].substring(0, 30) + '...' : '';
   }
 
   loading: boolean = false;
   private statusCheckInterval$: Subscription | null = null;
 
+  latestOrdersFound: number = 0;
+
   constructor(
     private userService: UserService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private store: Store
   ) {}
 
   ngOnInit(): void {}

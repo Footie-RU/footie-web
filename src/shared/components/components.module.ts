@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LoadingScreenComponent } from './loading-screen/loading-screen.component';
 import { StarRatingComponent } from './star-rating/star-rating.component';
 import { MatRippleModule } from '@angular/material/core';
+import { ImageViewerComponent } from './image-viewer/image-viewer.component';
 
 
 
@@ -15,6 +16,7 @@ import { MatRippleModule } from '@angular/material/core';
     SwitchControlComponent,
     LoadingScreenComponent,
     StarRatingComponent,
+    ImageViewerComponent,
   ],
   imports: [
     CommonModule,

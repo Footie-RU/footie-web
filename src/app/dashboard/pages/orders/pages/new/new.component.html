@@ -1,3 +1,6 @@
+<!-- Loading veil for header -->
+<div *ngIf="confirming$ | async" class="loading-veil"></div>
+
 <div class="container-fluid position-absolute top-0 start-0 p-0 contn">
   <!-- Select location on map -->
   <ng-container *ngIf="showMap && newOrderStage.value === 'location'">
@@ -590,14 +593,14 @@
           </div>
         </div>
 
-        <div [class.disabled]="confirming" class="col-12 last text-center p-4 d-flex flex-row gap-5 justify-content-center align-items-center">
+        <div [class.disabled]="confirming$ | async" class="col-12 last text-center p-4 d-flex flex-row gap-5 justify-content-center align-items-center">
           <a class="text-green" role="button" (click)="goToStage('details')">Edit Details</a>
           <a class="text-danger" role="button" (click)="cancel()">Cancel</a>
         </div>
 
         <form [formGroup]="newOrderForm" (submit)="confirm()" class="col-12">
-          <footiedrop-web-loading-button [buttonText]="'Confirm order'" [disabled]="confirming"
-            [loading]="confirming"></footiedrop-web-loading-button>
+          <footiedrop-web-loading-button [buttonText]="'Confirm order'" [disabled]="(confirming$ | async) ? true: false"
+            [loading]="(confirming$ | async) ? true : false"></footiedrop-web-loading-button>
         </form>
       </div>
     </div>

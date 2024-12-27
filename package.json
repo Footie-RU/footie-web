@@ -38,6 +38,7 @@
     "chance": "^1.1.11",
     "class-validator": "^0.14.1",
     "ng2-pdf-viewer": "^9.0.0",
+    "ngrx-store-freeze": "^0.2.4",
     "ngx-clipboard": "^16.0.0",
     "ngx-device-detector": "^5.0.1",
     "ngx-file-drop": "^15.0.0",

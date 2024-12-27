@@ -1,20 +1,23 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Address, ItemType } from 'src/app/core/interfaces/order.interface';
+import { Address, ItemType, Order } from 'src/app/core/interfaces/order.interface';
 import { User } from 'src/app/core/interfaces/user.interface';
-import { mockData, mockLocation } from 'src/app/utils/orders/order.mock';
 import * as Chance from 'chance';
 import { OrdersService } from 'src/app/core/services/orders.service';
 import { OrdersHelpers } from 'src/app/utils/orders/helpers';
 import { LocationService } from 'src/app/core/services/location.service';
 import { ToastrService } from 'ngx-toastr';
 import { YaGeocoderService } from 'angular8-yandex-maps';
-import { Subscription, switchMap, tap } from 'rxjs';
+import { EMPTY, Observable, Subscription, switchMap, tap } from 'rxjs';
 import { Region, UserLocation } from 'src/app/core/interfaces/location.interface';
 import { NgxFileDropEntry } from 'ngx-file-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { CancelOrderComponent } from '../../modals/cancel-order/cancel-order.component';
+import { Store } from '@ngrx/store';
+import { createOrder } from 'src/app/core/store/orders/orders.actions';
+import { selectOrdersLoadingState, selectOrdersErrorState, selectCreateOrderSuccessState } from 'src/app/core/store/orders/orders.selectors';
+import { CanComponentDeactivate } from 'src/app/core/guards/can-deactivate.guard';
 const chance = new Chance();
 
 interface Stage {
@@ -24,24 +27,33 @@ interface Stage {
 @Component({
   selector: 'footiedrop-web-new',
   templateUrl: './new.component.html',
-  styleUrls: ['./new.component.scss']
+  styleUrls: ['./new.component.scss'],
 })
-export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
+export class NewComponent
+  extends OrdersHelpers
+  implements OnInit, OnDestroy, CanComponentDeactivate
+{
   type: 'instant' | 'scheduled' = 'instant';
-  user: User = mockData.user; // JSON.parse(localStorage.getItem('user') as string);
+  user: User = JSON.parse(localStorage.getItem('user') as string);
   recentDeliveriesLocation: Address[] = [];
   newOrderStages: Stage[] = [
     { value: 'location', label: 'Delivery route', visited: true },
     { value: 'details', label: 'Details', visited: false },
-    { value: 'confirmation', label: 'Confirm order', visited: false }
+    { value: 'confirmation', label: 'Confirm order', visited: false },
   ];
   newOrderStage = this.newOrderStages[0];
   newOrderForm!: FormGroup;
-  get userCurrentLocation(): Address { return JSON.parse(localStorage.getItem('userCurrentLocation') as string) };
+  get userCurrentLocation(): Address {
+    return JSON.parse(localStorage.getItem('userCurrentLocation') as string);
+  }
 
-  @ViewChild('pickup') pickupAddressInput: ElementRef<HTMLInputElement> | undefined;
+  @ViewChild('pickup') pickupAddressInput:
+    | ElementRef<HTMLInputElement>
+    | undefined;
 
-  @ViewChild('dropoff') deliveryAddressInput: ElementRef<HTMLInputElement> | undefined;
+  @ViewChild('dropoff') deliveryAddressInput:
+    | ElementRef<HTMLInputElement>
+    | undefined;
 
   showMap: boolean = false;
   hideMap: boolean = false;
@@ -50,12 +62,30 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
   prohibitedItems: string[] = ['lorem', 'ipsum', 'carte'];
   showProhibitedItems: boolean = false;
 
-  itemTypes: string[] = Object.values(ItemType).map(i => i.toUpperCase());
+  itemTypes: string[] = Object.values(ItemType).map((i) => i.toUpperCase());
   deliveryModes: string[] = ['Foot'];
+
+  confirming$: Observable<boolean> = EMPTY;
+  error$: Observable<string | undefined> = EMPTY;
+
+  public file: File | null = null;
+  public fileUrl: string | null = null;
+  public fileDropErrorMessage: string = '';
+  private maxFileSize = 5242880; // 5MB
+
+  searchingPickup: boolean = false;
+  searchedForPickupAddress: boolean = false;
+  searchingDelivery: boolean = false;
+  searchedForDeliveryAddress: boolean = false;
+
+  foundLocations: Address[] = [];
+  pickupIsFocused: boolean = false;
+  deliveryIsFocused: boolean = false;
+  warningId: number = 0;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private orderService: OrdersService,
+    private store: Store,
     private locationService: LocationService,
     private toastr: ToastrService,
     private yaGeocoderService: YaGeocoderService,
@@ -69,9 +99,9 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
       this.checkIfServiceAvailableForUserCurrentLocation();
     }
 
-    this.activatedRoute.queryParams.subscribe(params => {
-      if (params["type"]) {
-        this.type = params["type"];
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params['type']) {
+        this.type = params['type'];
       }
 
       this.initForm();
@@ -79,16 +109,25 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
 
     if (this.user) {
       this.initUserDetails();
-    };
+    }
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.confirming$ = this.store.select(selectOrdersLoadingState);
+    this.error$ = this.store.select(selectOrdersErrorState);
+
+    this.toastr.toastrConfig.preventDuplicates = true;
+
+    this.error$.subscribe((error) => {
+      if (error)
+        this.toastr.error(error || 'An error occurred. Please try again.', '');
+    });
+  }
 
   ngOnDestroy(): void {
     if (this.warningId) this.toastr.remove(this.warningId);
   }
 
-  warningId: number = 0;
   checkIfServiceAvailableForUserCurrentLocation(): void {
     const allowedRegions: Region[] = [
       {
@@ -97,25 +136,33 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
       },
       {
         name: 'Russia',
-        code: 'ru'
-      }
+        code: 'ru',
+      },
     ];
 
     const location = this.userCurrentLocation;
-    const isAllowed = allowedRegions.some(region => location.country.toLowerCase().includes(region.code.toLowerCase()));
+    const isAllowed = allowedRegions.some((region) =>
+      location.country.toLowerCase().includes(region.code.toLowerCase())
+    );
 
     if (!isAllowed) {
-      this.toastr.warning('Service is not available in your current location.', '', {
-        disableTimeOut: true,
-        tapToDismiss: false,
-      });
+      this.toastr.warning(
+        'Service is not available in your current location.',
+        '',
+        {
+          disableTimeOut: true,
+          tapToDismiss: false,
+        }
+      );
       this.warningId = this.toastr.currentlyActive;
     }
   }
 
   handleStageChange(stage: Stage): void {
     // Find the index of the stage to be updated
-    const stageIndex = this.newOrderStages.findIndex(s => s.value === stage.value);
+    const stageIndex = this.newOrderStages.findIndex(
+      (s) => s.value === stage.value
+    );
 
     // Create a new Stage object with 'visited' set to true
     const updatedStage = { ...this.newOrderStages[stageIndex], visited: true };
@@ -124,7 +171,7 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
     const updatedStages = [
       ...this.newOrderStages.slice(0, stageIndex),
       updatedStage,
-      ...this.newOrderStages.slice(stageIndex + 1)
+      ...this.newOrderStages.slice(stageIndex + 1),
     ];
 
     // Update the current stage and the stages array
@@ -133,14 +180,21 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
   }
 
   goToStage(value: 'location' | 'details' | 'confirmation') {
-    const stageIndex = this.newOrderStages.findIndex(stage => stage.value === value);
+    const stageIndex = this.newOrderStages.findIndex(
+      (stage) => stage.value === value
+    );
 
     if (value !== 'location' && this.newOrderForm.get('location')?.invalid) {
-      this.toastr.info('Please complete the delivery route information before proceeding.');
+      this.toastr.info(
+        'Please complete the delivery route information before proceeding.'
+      );
       return;
     }
 
-    if (!['details', 'location'].includes(value) && this.newOrderForm.get('details')?.invalid) {
+    if (
+      !['details', 'location'].includes(value) &&
+      this.newOrderForm.get('details')?.invalid
+    ) {
       this.toastr.info('Please complete the order details before proceeding.');
       this.newOrderForm.get('details')?.markAllAsTouched();
       return;
@@ -149,7 +203,7 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
     if (stageIndex !== -1) {
       this.newOrderStages = this.newOrderStages.map((stage, index) => ({
         ...stage,
-        visited: index <= stageIndex
+        visited: index <= stageIndex,
       }));
 
       this.newOrderStage = this.newOrderStages[stageIndex];
@@ -160,8 +214,10 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
   }
 
   initUserDetails(): void {
-    this.recentDeliveriesLocation = this.user.orders?.filter(order => order.status === 'Delivered').map(order => order.deliveryAddress) || [];
-    console.log(this.recentDeliveriesLocation);
+    this.recentDeliveriesLocation =
+      this.user.orders
+        ?.filter((order) => order.status === 'Delivered')
+        .map((order) => order.location.delivery) || [];
   }
 
   initForm(): void {
@@ -190,7 +246,10 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
       }),
       details: new FormGroup({
         sender: new FormGroup({
-          name: new FormControl(this.user.firstName + ' ' + this.user.lastName, [Validators.required]),
+          name: new FormControl(
+            this.user.firstName + ' ' + this.user.lastName,
+            [Validators.required]
+          ),
           phone: new FormControl(this.user.phone, [Validators.required]),
           email: new FormControl(this.user.email, [Validators.required]),
           userId: new FormControl(this.user.id, [Validators.required]),
@@ -204,29 +263,46 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
         package: new FormGroup({
           title: new FormControl(null, [Validators.required]),
           type: new FormControl('GADGET', [Validators.required]),
-          quantity: new FormControl(1, [Validators.required, Validators.min(1)]),
+          quantity: new FormControl(1, [
+            Validators.required,
+            Validators.min(1),
+          ]),
           size: new FormControl('1KG', [Validators.required]),
           image: new FormControl(null, [Validators.required]),
           modeOfDelivery: new FormControl('foot', [Validators.required]),
-          message: new FormControl(null)
-        })
+          message: new FormControl(null),
+        }),
       }),
       payment: new FormGroup({
         price: new FormControl(0, [Validators.required]),
-      })
+      }),
     });
 
     if (this.userCurrentLocation) {
-      this.newOrderForm.get('location.pickup.address')?.patchValue(this.userCurrentLocation.address);
-      this.newOrderForm.get('location.pickup')?.patchValue(this.userCurrentLocation);
+      this.newOrderForm
+        .get('location.pickup.address')
+        ?.patchValue(this.userCurrentLocation.address);
+      this.newOrderForm
+        .get('location.pickup')
+        ?.patchValue(this.userCurrentLocation);
       setTimeout(() => {
         this.deliveryAddressInput?.nativeElement.focus();
       }, 500);
     }
 
-    this.newOrderForm.valueChanges.subscribe(value => {
+    // Check if there's saved data in sessionStorage
+    const savedFormData = sessionStorage.getItem('newOrderForm');
+    if (savedFormData) {
+      const parsedFormData = JSON.parse(savedFormData);
+      this.newOrderForm.patchValue(parsedFormData);
+    }
+
+    this.newOrderForm.valueChanges.subscribe((value) => {
       const pickupAddressControl = this.newOrderForm.get('location.pickup');
       const deliveryAddressControl = this.newOrderForm.get('location.delivery');
+
+      // Save the form value to sessionStorage on change
+      sessionStorage.setItem('newOrderForm', JSON.stringify(value));
 
       if (pickupAddressControl?.valid && !deliveryAddressControl?.valid) {
         setTimeout(() => {
@@ -241,14 +317,17 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
         this.pickupAddressInput?.nativeElement.blur();
         this.deliveryAddressInput?.nativeElement.blur();
         this.goToStage('details');
-      };
+      }
     });
 
-    if (this.type === "scheduled") {
-      this.newOrderForm.addControl('schedule', new FormGroup({
-        date: new FormControl('', [Validators.required]),
-        time: new FormControl('', [Validators.required]),
-      }));
+    if (this.type === 'scheduled') {
+      this.newOrderForm.addControl(
+        'schedule',
+        new FormGroup({
+          date: new FormControl('', [Validators.required]),
+          time: new FormControl('', [Validators.required]),
+        })
+      );
     }
   }
 
@@ -276,11 +355,10 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
     }
   }
 
-  pickupIsFocused: boolean = false;
   pickupOnFocus(): void {
     setTimeout(() => {
       this.pickupIsFocused = true;
-      this.mapFor = 'pickup'
+      this.mapFor = 'pickup';
     }, 1000);
   }
 
@@ -290,11 +368,10 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  deliveryIsFocused: boolean = false;
   deliveryOnFocus(): void {
     setTimeout(() => {
       this.deliveryIsFocused = true;
-      this.mapFor = 'dropoff'
+      this.mapFor = 'dropoff';
     }, 1000);
   }
 
@@ -304,13 +381,6 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  searchingPickup: boolean = false;
-  searchedForPickupAddress: boolean = false;
-  searchingDelivery: boolean = false;
-  searchedForDeliveryAddress: boolean = false;
-
-  foundLocations: Address[] = [];
-
   searchAddress(type: 'pickup' | 'delivery'): void {
     // Search address
     if (type === 'pickup') {
@@ -318,49 +388,63 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
       if (!searchvalue) {
         this.foundLocations = [];
         return;
-      };
+      }
       if (searchvalue && searchvalue.length) {
         this.searchingPickup = true;
         this.searchedForPickupAddress = true;
         this.searchedForDeliveryAddress = false;
-        this.locationService.searchLocations(searchvalue, 'pickup').subscribe((locations) => {
-          this.searchingPickup = false;
-          this.foundLocations = locations;
-        });
+        this.locationService
+          .searchLocations(searchvalue, 'pickup')
+          .subscribe((locations) => {
+            this.searchingPickup = false;
+            this.foundLocations = locations;
+          });
       }
     } else {
-      let searchvalue = this.newOrderForm.get('location.delivery.address')?.value;
+      let searchvalue = this.newOrderForm.get(
+        'location.delivery.address'
+      )?.value;
       if (!searchvalue) {
         this.foundLocations = [];
         return;
-      };
+      }
       if (searchvalue && searchvalue.length) {
         this.searchingDelivery = true;
         this.searchedForDeliveryAddress = true;
         this.searchedForPickupAddress = false;
-        this.locationService.searchLocations(searchvalue, 'delivery').subscribe((locations) => {
-          this.searchingDelivery = false;
-          this.foundLocations = locations;
-        });
+        this.locationService
+          .searchLocations(searchvalue, 'delivery')
+          .subscribe((locations) => {
+            this.searchingDelivery = false;
+            this.foundLocations = locations;
+          });
       }
     }
   }
 
   selectAddress(address: Address): void {
-    const { pickupAddress, deliveryAddress, searchedForPickupAddress, searchedForDeliveryAddress, newOrderForm } = this;
+    const {
+      pickupAddress,
+      deliveryAddress,
+      searchedForPickupAddress,
+      searchedForDeliveryAddress,
+      newOrderForm,
+    } = this;
 
     const updatePickupAddressForm = () => {
       newOrderForm.get('location.pickup.address')?.patchValue(address.address);
       newOrderForm.get('location.pickup')?.patchValue(address);
       this.foundLocations = [];
-    }
+    };
 
     const updateDeliveryAddressForm = () => {
-      newOrderForm.get('location.delivery.address')?.patchValue(address.address);
+      newOrderForm
+        .get('location.delivery.address')
+        ?.patchValue(address.address);
       newOrderForm.get('location.delivery')?.patchValue(address);
       this.foundLocations = [];
-      console.log(this.newOrderForm.value)
-    }
+      console.log(this.newOrderForm.value);
+    };
 
     if (this.mapFor === 'pickup') {
       updatePickupAddressForm();
@@ -391,9 +475,15 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
       }
     }
 
-    if ((pickupAddress !== '' && searchedForPickupAddress) || pickupAddress === '') {
+    if (
+      (pickupAddress !== '' && searchedForPickupAddress) ||
+      pickupAddress === ''
+    ) {
       updatePickupAddressForm();
-    } else if ((deliveryAddress !== '' && searchedForDeliveryAddress) || deliveryAddress === '') {
+    } else if (
+      (deliveryAddress !== '' && searchedForDeliveryAddress) ||
+      deliveryAddress === ''
+    ) {
       updateDeliveryAddressForm();
     } else {
       // Default case: if neither specific condition is met, default to pickup
@@ -402,7 +492,11 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
   }
 
   get selectedType(): 'pickup' | 'delivery' {
-    return this.deliveryIsFocused ? 'delivery' : this.pickupIsFocused ? 'pickup' : 'pickup';
+    return this.deliveryIsFocused
+      ? 'delivery'
+      : this.pickupIsFocused
+      ? 'pickup'
+      : 'pickup';
   }
 
   get selectedTypeAddress(): Address {
@@ -417,12 +511,12 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
     let icon = '';
     switch (stage.visited) {
       case false:
-        icon = `bi-${index}-circle`
+        icon = `bi-${index}-circle`;
         break;
       default:
-        icon = 'bi-check-circle-fill'
+        icon = 'bi-check-circle-fill';
         break;
-    };
+    }
     return icon;
   }
 
@@ -441,18 +535,15 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
   }
 
   calculateTrip() {
-    this.newOrderForm.get('payment.price')?.patchValue(2000, { emitEvent: false });
+    this.newOrderForm
+      .get('payment.price')
+      ?.patchValue(2000, { emitEvent: false });
   }
 
   closeMap() {
     this.hideMap = true;
     this.showMap = false;
   }
-
-  public file: File | null = null;
-  public fileUrl: string | null = null;
-  public fileDropErrorMessage: string = '';
-  private maxFileSize = 5242880; // 5MB
 
   public dropped(files: NgxFileDropEntry[]) {
     this.handleFileDrop(files);
@@ -519,31 +610,45 @@ export class NewComponent extends OrdersHelpers implements OnInit, OnDestroy {
     this.newOrderForm.get('details.package.image')?.setValue(null);
   }
 
-  // Confirmation
-  confirming: boolean = false;
-
   confirm(): void {
     if (this.newOrderForm.valid) {
-      this.confirming = true;
-
-      console.log(this.newOrderForm.value)
-
-      setTimeout(() => {
-        this.toastr.info('Feature is ongoing development!');
-        this.router.navigate(['/dashboard/orders']);
-      }, 2000);
-    };
+      const newOrder: Partial<Order> = {
+        details: this.newOrderForm.get('details')?.value,
+        location: this.newOrderForm.get('location')?.value,
+        payment: this.newOrderForm.get('payment')?.value,
+      };
+      this.store.dispatch(createOrder({ newOrder }));
+    }
   }
 
   cancel(): void {
     const ref = this.dialog.open(CancelOrderComponent);
-    ref.componentInstance.why = 'Are you sure you want to cancel? <br> You\'ll lose your changes.';
+    ref.componentInstance.why =
+      "Are you sure you want to cancel? <br> You'll lose your changes.";
     ref.componentInstance.options = [];
-    ref.componentInstance.selectedOption = { value: 'null', viewValue: 'null' }
+    ref.componentInstance.selectedOption = { value: 'null', viewValue: 'null' };
     ref.afterClosed().subscribe((reason) => {
       if (reason) {
         this.router.navigate(['/dashboard']);
       }
+    });
+  }
+
+  canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+    return new Observable<boolean>((observer) => {
+      this.confirming$.subscribe((isProcessing) => {
+        if (isProcessing) {
+          // If order creation is in progress, ask for confirmation before leaving the page
+          observer.next(
+            window.confirm(
+              'Your order is still being created. Are you sure you want to leave?'
+            )
+          );
+        } else {
+          observer.next(true); // If no process is in progress, allow navigation
+        }
+        observer.complete();
+      });
     });
   }
 }
