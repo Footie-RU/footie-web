@@ -1,0 +1,126 @@
+<footiedrop-web-courier-header-navigation></footiedrop-web-courier-header-navigation>
+<!-- User's Online/Offline Status -->
+<div class="col-12">
+  <div
+    class="status"
+    mat-ripple
+    role="button"
+    [ngClass]="{
+      online: user.status === 'online',
+      offline: user.status === 'offline'
+    }"
+    (click)="toggleUserStatus()"
+    [class.disabled]="loading"
+  >
+    <div class="col-auto status-text">
+      <img class="px-5" src="assets/images/icons/online-arrows.svg" />
+
+      {{ user.status }}
+      <div
+        *ngIf="loading"
+        class="spinner-border text-primary text-light spinner-border-sm"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Switch Button -->
+    <div class="col-auto">
+      <footiedrop-web-courier-switch-control
+        #switchControl
+        [checked]="user.status === 'online'"
+        (checkedChange)="toggleUserStatus()"
+        [disabled]="loading"
+      ></footiedrop-web-courier-switch-control>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid home-items mb-5 pb-5 px-0 position-relative">
+  <!-- Notifications Collapsible -->
+  <div class="col-12 card-contn">
+    <mat-accordion>
+      <mat-expansion-panel
+        hideToggle="true"
+        (opened)="firstTruncatedWarningEl.classList.add('invisible')"
+        (closed)="firstTruncatedWarningEl.classList.remove('invisible')"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title style="font-weight: 600">
+            ({{ warnings.length }}) Notification{{
+              warnings.length > 1 ? "s" : ""
+            }}
+          </mat-panel-title>
+          <mat-panel-description>
+            <span
+              #firstTruncatedWarningEl
+              class="text-nowrap"
+              [innerHTML]="firstTruncatedWarning"
+            ></span>
+
+            <!-- Mat icon alert -->
+            <span class="material-symbols-outlined text-warning">
+              notifications_active
+            </span>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <!-- Notifications panel here -->
+        <div class="col-12">
+          <div
+            *ngFor="let warning of warnings"
+            class="alert alert-warning"
+            role="alert"
+          >
+            <div class="d-flex justify-content-between">
+              <div class="col-12">
+                <span [innerHTML]="warning"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+
+  <!-- Available Orders Card -->
+  <div class="col-12 card-contn expandable" [@slideInOut]="user.status">
+    <div
+      matRipple
+      class="card d-flex justify-content-center align-items-center"
+    >
+      <div class="col-12 p-4">
+        <div class="row">
+          <div class="col-4">
+            <img src="assets/images/png/box.png" alt="Package Box" />
+          </div>
+          <div class="col-8 d-flex flex-column justify-content-center">
+            <h5 class="fw-bold">
+              {{
+                latestOrdersFound > 0
+                  ? latestOrdersFound +
+                    (latestOrdersFound === 1
+                      ? " Delivery order found!"
+                      : " Delivery orders found!")
+                  : "No delivery orders found."
+              }}
+            </h5>
+
+            <a *ngIf="latestOrdersFound > 0" routerLink="./orders" class="btn-green fs-6">
+              View orders
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <ng-container>
+    <div class="col-12" [@stickyTop]="user.status">
+      <footiedrop-web-recent-deliveries></footiedrop-web-recent-deliveries>
+    </div>
+  </ng-container>
+</div>

@@ -108,6 +108,7 @@ $footiedrop-web-theme: mat.define-light-theme((color: (primary: $footiedrop-web-
 @import url(assets/css/animations.css);
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=notifications_active');
 
 html,
 body {
@@ -240,7 +241,7 @@ textarea {
 
 a {
   color: #01674f !important;
-  font-size: 14px;
+  font-size: inherit;
   font-weight: 500;
 }
 
@@ -466,4 +467,23 @@ div {
 
 footiedrop-web-loading-button {
   width: 100%;
+}
+
+.card-contn {
+  background-color: #F2F2F2;
+  padding: 15px;
+  margin-top: 15px;
+
+  &:last-child {
+    padding-top: 0px;
+  }
+
+  .card {
+    border: none;
+    box-shadow: 0 0 5px #00000015;
+
+    a {
+      text-decoration: none;
+    }
+  }
 }

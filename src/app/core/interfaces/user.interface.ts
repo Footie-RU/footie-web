@@ -26,6 +26,7 @@ export interface User {
   orders?: Orders
   warnings?: string[];
   kyc?: UserKYC;
+  status?: "online" | "offline";
 }
 
 export interface Order {

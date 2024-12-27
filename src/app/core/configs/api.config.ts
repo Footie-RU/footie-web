@@ -26,6 +26,8 @@ export const ApiEndpoints = {
       `${environment.apiUrl}/users/verifyPasswordResetToken/${token}`,
     updatePassword: () => `${environment.apiUrl}/users/updatePassword`,
     changeEmail: () => `${environment.apiUrl}/users/changeEmail`,
+    toggleStatus: (id: string) => `${environment.apiUrl}/users/toggle-status/${id}`,
+    getUserStatus: (id: string) => `${environment.apiUrl}/users/status/${id}`,
     settings: {
       ChangeLanguage: () => `${environment.apiUrl}/settings/changeLanguage`,
       ChangePassword: () => `${environment.apiUrl}/settings/changePassword`,
@@ -46,4 +48,11 @@ export const ApiEndpoints = {
   map: {
     yandex_key: '2215fdbd-83bb-4c46-9c52-faffd29f5d91',
   },
+  orders: {
+    getAll: () => `${environment.apiUrl}/orders`,
+    getById: (id: string) => `${environment.apiUrl}/orders/${id}`,
+    create: () => `${environment.apiUrl}/orders/create`,
+    update: (id: string) => `${environment.apiUrl}/orders/${id}`,
+    delete: (id: string) => `${environment.apiUrl}/orders/${id}`,
+  }
 };

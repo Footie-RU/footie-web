@@ -30,8 +30,8 @@ export class CurrentDeliveriesComponent extends OrdersHelpers implements OnInit 
   ngOnInit(): void { }
 
   fetchOrders(): void {
-    this.ordersService.getOrders().subscribe((orders) => {
-      this.orders = this.filterOrdersForOnlyCurrentDeliveries(orders);
+    this.ordersService.getOrders().subscribe((res) => {
+      this.orders = this.filterOrdersForOnlyCurrentDeliveries(res.data);
     });
   }
 

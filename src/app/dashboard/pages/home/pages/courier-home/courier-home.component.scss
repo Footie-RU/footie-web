@@ -1,0 +1,71 @@
+.status {
+  color: #777777;
+  height: 80px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px 25px;
+  position: relative;
+  z-index: 1;
+
+  &.online {
+    background-color: #2aa950;
+
+    .status-text {
+      color: white !important;
+    }
+  }
+
+  &.offline {
+    background-color: #d9d9d9;
+  }
+
+  .inner {
+    position: relative;
+    z-index: 5;
+  }
+
+  .status-text {
+    font-size: 20px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+
+  .form-check-input {
+    position: relative;
+    z-index: 10;
+  }
+}
+
+.expandable {
+  transition: all 0.5s ease-in-out;
+  position: relative; /* Default position before animation */
+  width: 100%; /* Adjust based on your layout needs */
+  height: auto; /* Auto height by default */
+  overflow: hidden; /* Ensures content stays within bounds when collapsed */
+}
+
+::ng-deep {
+  .mat-expansion-panel-header-title,
+  .mat-expansion-panel-header-description {
+    justify-content: space-between !important;
+  }
+
+  .mat-expansion-panel-header {
+    padding: 0 15px !important;
+  }
+
+  .mat-expansion-panel-header-title,
+  .mat-expansion-panel-header-description {
+    margin-right: 0px !important;
+  }
+
+  .mat-expansion-panel-body {
+    padding: 0 15px !important;
+  }
+
+  .mat-expansion-panel:not([class*="mat-elevation-z"]) {
+    box-shadow: 0 0 5px #00000015 !important;
+  }
+}

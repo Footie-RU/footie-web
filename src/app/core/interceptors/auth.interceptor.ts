@@ -16,7 +16,13 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Define the list of domains that require authorization headers
-    const authorizedDomains = ['footiedrop.adaptable.app', 'footiedrop.ru', 'localhost:3000'];
+    const authorizedDomains = [
+      'footiedrop.adaptable.app',
+      'footiedrop.ru',
+      'localhost:3000',
+      '192.168.0.112',
+      '192.168.0.29',
+    ];
 
     // Check if the request URL matches any of the authorized domains
     const isAuthorizedDomain = authorizedDomains.some(domain => req.url.includes(domain));

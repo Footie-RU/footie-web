@@ -1,28 +1,100 @@
-<div class="container-fluid position-relative h-100">
-  <div class="row h-100">
-    <div class="col-md-3 d-none d-md-block p-0 shadow-sm" style="position: relative;z-index: 999;">
-      <footiedrop-web-side-navigation [currentPage]="currentPage"></footiedrop-web-side-navigation>
-    </div>
-    <div class="col-12 px-0 col-md-9 d-flex flex-column" style="height: inherit;">
-      <footiedrop-web-dashboard-header [currentPage]="currentPage" [innerPage]="innerPage" [hideProfileIcon]="hideProfileIcon"></footiedrop-web-dashboard-header>
-      <div class="container-fluid px-md-5 pt-md-4 h-100 main position-relative" style="padding-top: 15px;padding-bottom: 75px;flex: 1;">
-        <ng-container *ngIf="!loading; else loadingScreen">
-          <router-outlet></router-outlet>
-        </ng-container>
+<!-- Unsupported device (desktop) user is a courier  -->
+<ng-container
+  *ngIf="isDesktop && user && user.role === 'courier'; else SupportedScreenSize"
+>
+  <div
+    class="col-12 p-5 h-100 bg-green d-flex justify-content-center align-items-center"
+  >
+    <div class="card shadow border-0 col-lg-6 col-md-8 col-12">
+      <div
+        class="card-body text-center d-flex flex-column align-items-center gap-4"
+      >
+        <img
+          src="assets/images/logos/logo-transparent-green.svg"
+          alt="Footiedrop Logo"
+          width="300"
+        />
+        <img
+          class="d-block mx-auto py-4"
+          src="assets/images/icons/unsupported-device.svg"
+          alt="Unsupported Device"
+        />
 
-        <ng-template #loadingScreen>
-          <!-- bootstrap spinner -->
-          <div class="d-flex justify-content-center align-items-center h-100" [class.fade-out]="fadeOut">
-            <div class="spinner-border text-primary text-green" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        </ng-template>
+        <article class="col-10">
+          <h4 class="fw-2">Unsupported Device 😬</h4>
+          <p>
+            This platform is optimized for mobile devices. As a courier, please
+            use a supported phone or tablet to access your account.
+          </p>
+        </article>
+
+        <!-- Links: support, contact us, logout -->
+        <div class="d-flex justify-content-center py-5">
+          <a class="btn btn-link" [routerLink]="['/support']">Get Support</a>
+          <a class="btn btn-link" [routerLink]="['/contact-us']">Contact Us</a>
+          <a class="btn btn-link" [routerLink]="['/logout']">Log out</a>
+        </div>
       </div>
-      <footiedrop-web-bottom-navigation class="d-block d-md-none" *ngIf="!hideBottomNav" [currentPage]="currentPage"></footiedrop-web-bottom-navigation>
     </div>
   </div>
-</div>
-<div class="container d-none invisible">
-  <ya-map [center]="[55, 34]" (ready)="onMapReady($event)"></ya-map>
-</div>
+</ng-container>
+
+<!-- Supported device (mobile & tablet) -->
+<ng-template #SupportedScreenSize>
+  <div  *ngIf="user" class="container-fluid position-relative h-100">
+    <div class="row h-100">
+      <div
+        class="col-lg-3 d-none d-lg-block p-0 shadow-sm"
+        style="position: relative; z-index: 999"
+      >
+        <footiedrop-web-side-navigation
+          [currentPage]="currentPage"
+        ></footiedrop-web-side-navigation>
+      </div>
+      <div
+        class="col-12 px-0 col-lg-9 d-flex flex-column"
+        style="height: inherit"
+      >
+        <footiedrop-web-dashboard-header
+          *ngIf="!hideHeader"
+          [currentPage]="currentPage"
+          [innerPage]="innerPage"
+          [hideProfileIcon]="hideProfileIcon"
+        ></footiedrop-web-dashboard-header>
+
+        <div
+          [class.p-0]="hideHeader"
+          [class.pt-md-4]="!hideHeader"
+          [class.px-md-5]="!hideHeader"
+          class="container-fluid h-100 main position-relative"
+          style="padding-top: 15px; padding-bottom: 75px; flex: 1"
+        >
+          <ng-container *ngIf="!loading; else loadingScreen">
+            <router-outlet></router-outlet>
+          </ng-container>
+
+          <ng-template #loadingScreen>
+            <!-- bootstrap spinner -->
+            <div
+              class="d-flex justify-content-center align-items-center h-100"
+              [class.fade-out]="fadeOut"
+            >
+              <div class="spinner-border text-primary text-green" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </ng-template>
+        </div>
+
+        <footiedrop-web-bottom-navigation
+          class="d-block d-md-none"
+          *ngIf="!hideBottomNav"
+          [currentPage]="currentPage"
+        ></footiedrop-web-bottom-navigation>
+      </div>
+    </div>
+  </div>
+  <div class="container d-none invisible">
+    <ya-map [center]="[55, 34]" (ready)="onMapReady($event)"></ya-map>
+  </div>
+</ng-template>

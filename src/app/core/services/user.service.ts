@@ -177,6 +177,50 @@ export class UserService {
         catchError((error) => throwError(error))
       );
   }
+
+  toggleUserStatus(newStatus: string): Observable<RequestResponse> {
+    return this.httpClient
+      .patch<RequestResponse>(ApiEndpoints.users.toggleStatus(this.user.id), {
+        status: newStatus,
+      })
+      .pipe(
+        tap((response) => {
+          if (response.result === 'success') {
+            localStorage.setItem('user', JSON.stringify(response.data));
+          }
+        }),
+        switchMap((response) => {
+          if (response.result === 'success') {
+            return of(response);
+          } else {
+            return throwError(response.message);
+          }
+        }),
+        catchError((error) => throwError(error))
+      );
+  }
+
+  getUserStatus(): Observable<'online' | 'offline'> {
+    return this.httpClient
+      .get<RequestResponse>(ApiEndpoints.users.getUserStatus(this.user.id))
+      .pipe(
+        tap((response) => {
+          if (response.result === 'success') {
+            this.updateUserStatus(response.data);
+          }
+        }),
+        switchMap((response) =>
+          response.result === 'success'
+            ? of(response.data.status)
+            : throwError(response.message)
+        ),
+        catchError((error) => throwError(error))
+      );
+  }
+
+  private updateUserStatus(status: 'online' | 'offline'): void {
+    localStorage.setItem('user', JSON.stringify({ ...this.user, status }));
+  }
 }
 
 @Injectable({
@@ -215,7 +259,7 @@ class UserHelperService {
 
     // 4. Check if the user's current location is available for the service
     if (this.userCurrentLocation) {
-      const allowedRegions: Region[] = [{ name: 'Russia', code: 'rus' }];
+      const allowedRegions: Region[] = [{ name: 'Russia', code: 'ru' }];
 
       const location = this.userCurrentLocation;
       const isAllowed = allowedRegions.some((region) =>
@@ -223,7 +267,7 @@ class UserHelperService {
       );
 
       if (!isAllowed) {
-        warnings.push('Service is not available in your current location.');
+        warnings.push('The service is not available in your current location. Learn more about our <a target="_blank" href="/locations">service locations</a>.');
       }
     }
 

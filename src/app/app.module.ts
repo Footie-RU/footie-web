@@ -22,6 +22,7 @@ import { KycModule } from './kyc/kyc.module';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { OrdersStateModule } from './core/store/orders/orders-state.module';
 
 const mapConfig: YaConfig = {
   apikey: ApiEndpoints.map.yandex_key,
@@ -54,9 +55,11 @@ const mapConfig: YaConfig = {
     SharedComponentsModule,
     SharedDirectivesModule,
     AngularYandexMapsModule.forRoot(mapConfig),
+    // State management modules
     EffectsModule.forRoot([]),
     StoreModule.forRoot({}, {}),
     StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() }),
+    OrdersStateModule
   ],
   providers: [
     {
