@@ -275,6 +275,7 @@ export class NewComponent
       }),
       payment: new FormGroup({
         price: new FormControl(0, [Validators.required]),
+        currency: new FormControl('RUB', [Validators.required]),
       }),
     });
 

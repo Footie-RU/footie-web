@@ -1,4 +1,4 @@
-import { NgModule, isDevMode } from '@angular/core';
+import { LOCALE_ID, NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -23,17 +23,20 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { OrdersStateModule } from './core/store/orders/orders-state.module';
+import localeRu from '@angular/common/locales/ru'; // Import Russian locale
+import { registerLocaleData } from '@angular/common';
 
 const mapConfig: YaConfig = {
   apikey: ApiEndpoints.map.yandex_key,
   lang: 'en_US',
 };
 
+
+
+registerLocaleData(localeRu, 'ru'); // Register Russian locale
+
 @NgModule({
-  declarations: [
-    AppComponent,
-    PageNotFoundComponent
-  ],
+  declarations: [AppComponent, PageNotFoundComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -59,7 +62,7 @@ const mapConfig: YaConfig = {
     EffectsModule.forRoot([]),
     StoreModule.forRoot({}, {}),
     StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() }),
-    OrdersStateModule
+    OrdersStateModule,
   ],
   providers: [
     {
@@ -72,7 +75,8 @@ const mapConfig: YaConfig = {
       useClass: AuthInterceptor,
       multi: true,
     },
+    { provide: LOCALE_ID, useValue: 'ru' },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
