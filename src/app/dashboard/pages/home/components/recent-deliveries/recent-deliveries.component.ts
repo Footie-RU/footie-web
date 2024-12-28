@@ -31,6 +31,11 @@ export class RecentDeliveriesComponent extends OrdersHelpers implements OnInit {
 
   filterForOnlyPendingOrders(orders: Orders): Orders {
     // Filter orders that are pending
-    return orders.filter((order) => ["Pending"].indexOf(order.status) !== -1).slice(0, 3);
+    return orders.filter((order) => {
+      console.log('Raw timestamp:', order.createdAt);
+      console.log('Parsed timestamp:', new Date(order.createdAt));
+
+      return ['Pending'].indexOf(order.status) !== -1;
+    }).slice(0, 3);
   }
 }

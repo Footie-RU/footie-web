@@ -1,4 +1,4 @@
-import { Order, OrderStatus } from "src/app/core/interfaces/order.interface";
+import { Order, OrderStatus } from 'src/app/core/interfaces/order.interface';
 
 export class OrdersHelpers {
   // Display the order status in a human-readable format
@@ -83,7 +83,8 @@ export class OrdersHelpers {
       return `Order failed`;
     } else {
       // Calculate the time since the order was placed
-      const createdAt = new Date(order.createdAt).getTime();
+      // Get the order creation time in UTC
+      const createdAt = new Date(order.createdAt).getTime() - 3600000;
       const timePassed = Math.abs(currentTime - createdAt);
 
       // Convert time passed into minutes, hours, days, or months
@@ -93,13 +94,13 @@ export class OrdersHelpers {
       const monthsPassed = Math.floor(timePassed / (3600000 * 24 * 30));
 
       if (minutesPassed < 60) {
-        return `Order placed: ${minutesPassed} minutes ago`;
+        return `Order placed: ${minutesPassed} ${minutesPassed > 1 ? 'minutes' : 'minute'} ago`;
       } else if (hoursPassed < 24) {
-        return `Order placed: ${hoursPassed} hours ago`;
+        return `Order placed: ${hoursPassed} ${hoursPassed > 1 ? 'hours' : 'hour'} ago`;
       } else if (daysPassed < 30) {
-        return `Order placed: ${daysPassed} days ago`;
+        return `Order placed: ${daysPassed} ${daysPassed > 1 ? 'days' : 'day'} ago`;
       } else {
-        return `Order placed: ${monthsPassed} months ago`;
+        return `Order placed: ${monthsPassed} ${monthsPassed > 1 ? 'months' : 'month'} ago`;
       }
     }
   }
@@ -130,4 +131,58 @@ export class OrdersHelpers {
         return 'bi bi-clock';
     }
   }
+}
+
+// Helper function to recursively append properties to FormData
+export function appendToFormData(
+  formData: FormData,
+  data: any,
+  parentKey: string = ''
+) {
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      const value = data[key];
+      const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
+      // If the value is an object, recursively append its properties
+      if (typeof value === 'object' && value !== null) {
+        appendToFormData(formData, value, fullKey);
+      } else {
+        // If the value is a Blob (image), handle it accordingly
+        if (value instanceof Blob) {
+          const fileName = `${key}.jpg`; // Generate a file name (or use any other strategy)
+          const file = convertBlobToFile(value, fileName);
+          formData.append(fullKey, file);
+        } else {
+          formData.append(fullKey, value);
+        }
+      }
+    }
+  }
+}
+
+// Assuming you are working with a blob URL and need to convert it to a File
+export function convertBlobToFile(blob: Blob, fileName: string): File {
+  return new File([blob], fileName, { type: blob.type });
+}
+
+export function fetchBlobFromUrl(url: string): Promise<Blob> {
+  return fetch(url)
+    .then((response) => response.blob())
+    .catch((error) => {
+      console.error('Failed to fetch blob from URL:', error);
+      throw error;
+    });
+}
+
+
+export function base64ToBlob(base64: string, contentType = 'image/jpeg'): Blob {
+  const byteCharacters = atob(base64.split(',')[1]); // Remove `data:image/...;base64,`
+  const byteArrays = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    const byteNumbers = new Array(slice.length).fill(0).map((_, i) => slice.charCodeAt(i));
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+  return new Blob(byteArrays, { type: contentType });
 }

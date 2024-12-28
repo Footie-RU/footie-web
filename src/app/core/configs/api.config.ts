@@ -54,5 +54,6 @@ export const ApiEndpoints = {
     create: () => `${environment.apiUrl}/orders/create`,
     update: (id: string) => `${environment.apiUrl}/orders/${id}`,
     delete: (id: string) => `${environment.apiUrl}/orders/${id}`,
+    uploadImage: (orderId: string) => `${environment.apiUrl}/orders/uploadImage/${orderId}`,
   }
 };

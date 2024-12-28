@@ -7,6 +7,8 @@ import { LoadingScreenComponent } from './loading-screen/loading-screen.componen
 import { StarRatingComponent } from './star-rating/star-rating.component';
 import { MatRippleModule } from '@angular/material/core';
 import { ImageViewerComponent } from './image-viewer/image-viewer.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 
 
 
@@ -22,7 +24,9 @@ import { ImageViewerComponent } from './image-viewer/image-viewer.component';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatRippleModule
+    MatRippleModule,
+    MatDialogModule,
+    MatIconModule
   ],
   exports: [
     LoadingButtonComponent,
